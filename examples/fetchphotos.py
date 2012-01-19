@@ -10,7 +10,7 @@ import urllib
 from StringIO import StringIO
 from fivehundred import *
 
-CONSUMER_KEY = 'HedA1jeHKM2KaXWIb1lPV9bIJJu9eIh84h2s613L'
+CONSUMER_KEY = '__your_consumer_key__'
 def main():
     api = FiveHundredPx(CONSUMER_KEY)
     generator = api.get_photos(feature='popular',limit=50)
