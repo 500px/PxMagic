@@ -1,3 +1,7 @@
+"""
+Created by @arthurnn on 2012-01-19.
+"""
+
 import urllib
 
 # Find a JSON parser
