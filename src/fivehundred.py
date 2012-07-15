@@ -38,13 +38,19 @@ class FiveHundredPx:
         try:
             
             file_resp = urllib.urlopen(FiveHundredPx.BASE_URL + path + "?" +
-                              urllib.urlencode(args), post_data)
+                              urllib.urlencode(args, True), post_data)
         
             response = _parse_json(file_resp.read())
         finally:
             file_resp.close()
 
         return response
+
+    def search_photos(self, term, params = {}):
+      params['term'] = term
+      data = self.request('/photos/search', params)
+      return data
+
 
     def get_photos(self, feature='editors', limit=200):
         args = {"feature": feature}
