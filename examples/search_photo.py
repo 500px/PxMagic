@@ -14,7 +14,7 @@ CONSUMER_KEY = '__your_consumer_key__' # Get one @ developer.500px.com
 def main():
     api = FiveHundredPx(CONSUMER_KEY)
 
-    photos = api.search_photos('sao paulo', {'limit': 10, 'image_size[]': [3,4]})['photos']
+    photos = api.search_photos('sao paulo', {'rpp': 10, 'image_size[]': [3,4]})['photos']
     for p in photos:
         #print p
         thumbnail_url = p['image_url']
