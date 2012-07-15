@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-Created by @arthurnn on 2012-01-19.
+Created by @arthurnn
 """
 
 import sys
@@ -10,7 +10,7 @@ import urllib
 from StringIO import StringIO
 from fivehundred import *
 
-CONSUMER_KEY = '__your_consumer_key__'
+CONSUMER_KEY = '__your_consumer_key__' # Get one @ developer.500px.com
 def main():
     api = FiveHundredPx(CONSUMER_KEY)
     generator = api.get_photos(feature='popular',limit=50)
