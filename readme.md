@@ -20,7 +20,4 @@ TODO list
 
 * Implement the OAuth
 * Implement the POST methods to the API
-
-
-
-	
+* Implement the rest of the get requests
