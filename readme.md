@@ -8,12 +8,15 @@ Installation
 ------------
 
 ### To install:
-1.  ```bash python setup.py build ```
-2.  ```bash sudo python setup.py install ```
+1.  ```bash
+python setup.py build ```
+2.  ```bash
+sudo python setup.py install ```
 
 To try without installing
 -------------------------	
-```bash python -m examples.fetchphotos ```
+```bash
+python -m examples.fetchphotos ```
 
 TODO list
 ---------
