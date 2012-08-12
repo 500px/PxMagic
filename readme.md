@@ -7,17 +7,17 @@ This SDK is still in development, following the TODO List. Fell free to add pull
 Installation
 ------------
 
-To install:  
-	> python setup.py build  
-	> sudo python setup.py install  
-	
+### To install:
+1.  ```python setup.py build ```
+2.  ```sudo python setup.py install ```
+
+To try without installing
+-------------------------	
+```python -m examples.fetchphotos ```
 
 TODO list
 ---------
 
 * Implement the OAuth
 * Implement the POST methods to the API
-
-
-
-	
+* Implement the rest of the get requests

@@ -4,13 +4,16 @@
 Created by @arthurnn
 """
 
-import sys
-import os
 import urllib
 from StringIO import StringIO
-from fivehundred import *
+try:
+    from fivehundred import *
+except ImportError:
+    from src.fivehundred import *
+    from helpers.authentication import get_consumer_key
 
-CONSUMER_KEY = '__your_consumer_key__' # Get one @ developer.500px.com
+CONSUMER_KEY = get_consumer_key()
+
 def main():
     api = FiveHundredPx(CONSUMER_KEY)
     generator = api.get_photos(feature='popular',limit=50)
@@ -25,10 +28,8 @@ def main():
             #img = Image.open(im)
             print '(%s,%s)' % (thumbnail_url,fhpx_url)
         except Exception, e:
-		    print 'Error in the following url[%s]:%s' % (thumbnail_url,e)
-		    continue
-
+            print 'Error in the following url[%s]:%s' % (thumbnail_url,e)
+            continue
 
 if __name__ == '__main__':
 	main()
-

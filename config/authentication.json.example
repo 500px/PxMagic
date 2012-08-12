@@ -1,0 +1,4 @@
+{"authentication":
+ {"consumer_key":"__your_consumer_key__"},
+ {"consumer_secret":"__your_consumer_secret__"}
+}
