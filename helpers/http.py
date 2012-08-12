@@ -9,3 +9,13 @@ class safe_urlopen:
     
     def __exit__(self, type, value, traceback):
         self.file_resp.close()
+
+def smart_urlencode(kwargs):
+    for key in kwargs:
+        array = type(kwargs[key]) == type(()) or \
+            type(kwargs[key]) == type([])
+        if array:
+            new_key = key + '[]'
+            kwargs[new_key] = kwargs[key]
+            del(kwargs[key])
+    return urllib.urlencode(kwargs, True)

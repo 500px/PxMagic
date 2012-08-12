@@ -18,8 +18,9 @@ def main():
     api = FiveHundredPx(CONSUMER_KEY)
 
     kwargs = dict(term='sao paulo',
-                  rpp=10)
-    kwargs['image_size[]'] = [3,4]
+                  rpp=10,
+                  image_size=[3,4])
+
     photos = api.search_photos(**kwargs)['photos']
     for p in photos:
         thumbnail_url = p['image_url']

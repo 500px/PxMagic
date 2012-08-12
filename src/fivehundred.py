@@ -4,7 +4,7 @@ Created by @arthurnn on 2012-01-19.
 
 import urllib
 from helpers.json_finder import _parse_json
-from helpers.http import safe_urlopen
+from helpers.http import safe_urlopen, smart_urlencode
 
 class FiveHundredPx:
     BASE_URL = 'https://api.500px.com/v1'
@@ -25,7 +25,7 @@ class FiveHundredPx:
             raise NotImplementedError
         self._set_consumer_key_to_args_(post_args, kwargs)
         post_data = None if post_args is None else urllib.urlencode(post_args)
-        encoded_kwargs = urllib.urlencode(kwargs, True)
+        encoded_kwargs = smart_urlencode(kwargs)
         full_url = FiveHundredPx.BASE_URL + path + "?" + encoded_kwargs
         with safe_urlopen(full_url, post_data) as file_resp:
             response = _parse_json(file_resp.read())
