@@ -7,10 +7,13 @@ This SDK is still in development, following the TODO List. Fell free to add pull
 Installation
 ------------
 
-To install:  
-	> python setup.py build  
-	> sudo python setup.py install  
-	
+### To install:
+1.  ```bash python setup.py build ```
+2.  ```bash sudo python setup.py install ```
+
+To try without installing
+-------------------------	
+```bash python -m examples.fetchphotos ```
 
 TODO list
 ---------
