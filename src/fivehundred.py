@@ -3,20 +3,7 @@ Created by @arthurnn on 2012-01-19.
 """
 
 import urllib
-
-# Find a JSON parser
-try:
-    import json
-    _parse_json = lambda s: json.loads(s)
-except ImportError:
-    try:
-        import simplejson
-        _parse_json = lambda s: simplejson.loads(s)
-    except ImportError:
-        # For Google AppEngine
-        from django.utils import simplejson
-        _parse_json = lambda s: simplejson.loads(s)
-        
+from helpers.json_finder import _parse_json
 
 class FiveHundredPx:
     BASE_URL = 'https://api.500px.com/v1'
@@ -74,8 +61,3 @@ class FiveHundredPx:
     def get_photo(self, id, args = None):
         data = self.request('/photos/%d' % id, args)
         return data
-        
-        
-            
-            
-            
