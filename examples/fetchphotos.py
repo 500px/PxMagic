@@ -8,9 +8,23 @@ import sys
 import os
 import urllib
 from StringIO import StringIO
-from fivehundred import *
+try:
+    from fivehundred import *
+except ImportError:
+    from src.fivehundred import *
+    from helpers.json_finder import _parse_json
 
-CONSUMER_KEY = '__your_consumer_key__' # Get one @ developer.500px.com
+
+# More info at developer.500px.com. If you are logged in
+# go to: http://500px.com/settings/applications 
+def get_consumer_key():
+    with open(os.path.join('config','authentication.json')) as f:
+        auth = _parse_json(f.read())
+        return auth["authentication"]["consumer_key"]
+
+CONSUMER_KEY = get_consumer_key()
+
+
 def main():
     api = FiveHundredPx(CONSUMER_KEY)
     generator = api.get_photos(feature='popular',limit=50)
@@ -31,4 +45,3 @@ def main():
 
 if __name__ == '__main__':
 	main()
-
