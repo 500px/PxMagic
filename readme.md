@@ -15,6 +15,13 @@ To try without installing
 -------------------------	
 ```python -m examples.fetchphotos ```
 
+### Or for some magic object fun:
+```python -m examples.magic_photos ```
+
+To run test suite
+-----------------
+```python -m discover ````
+
 TODO list
 ---------
 
