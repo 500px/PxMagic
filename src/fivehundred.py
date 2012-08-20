@@ -5,8 +5,8 @@ Created by @arthurnn on 2012-01-19.
 import urllib
 from helpers.json_finder import _parse_json
 from helpers.http import safe_urlopen, smart_urlencode
-
-class FiveHundredPx:
+from pprint import pprint
+class FiveHundredPx(object):
     BASE_URL = 'https://api.500px.com/v1'
     
     def __init__(self, consumer_key):
@@ -43,10 +43,12 @@ class FiveHundredPx:
         getting the first 100 photos from the editiors list.
         
         If there are no limits, it defaults to the API default of
-        a limit of 20 results.
+        a limit of 20 results, which is also the official limit in 
+        the terms of use for number of photos to be displayed at 
+        once, although you can email 500px to get permission to 
+        display more.
         """
-        kwargs = kwargs or dict(feature='editors',
-                                limit='100')
+        kwargs = kwargs or dict(feature='editors')
         
         limit = 20 if 'limit' not in kwargs else kwargs['limit']
         data = self.request('/photos', **kwargs)
@@ -64,8 +66,16 @@ class FiveHundredPx:
             kwargs['page'] = page = page+1
             data = self.request('/photos', **kwargs)
             
-    def get_photo(self, id, args = None):
-        data = self.request('/photos/%d' % id, args)
+    def get_photo(self, id, **kwargs):
+        data = self.request('/photos/%d' % id, **kwargs)
+        return data
+
+    def get_user(self, id, **kwargs):
+        if 'username' in kwargs:
+            raise NotImplementedError
+        if 'email' in kwargs:
+            raise NotImplementedError
+        data = self.request('/users/%d' % id, **kwargs)
         return data
 
     def _set_consumer_key_to_args_(self, post_args, kwargs):
