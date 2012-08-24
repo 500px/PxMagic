@@ -24,6 +24,7 @@ class Test_retrieve_photo(unittest.TestCase):
 
         different_owly_photo = Photo(4600083)
         self.assertNotEqual(owly_photo.__hash__(), different_owly_photo.__hash__())
+        self.assertNotEqual(owly_photo.image_url, different_owly_photo.image_url)
         
     def test_dir_for_magic_user_generation(self):
         self.assertIn('user', dir(self.owly_photo))
