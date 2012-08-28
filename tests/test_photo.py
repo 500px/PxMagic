@@ -22,7 +22,7 @@ class Test_retrieve_photo(unittest.TestCase):
         same_owly_photo = Photo(3256058)
         self.assertEqual(owly_photo.__hash__(), same_owly_photo.__hash__())
 
-        different_owly_photo = Photo(4600083)
+        different_owly_photo = Photo(1763176)
         self.assertNotEqual(owly_photo.__hash__(), different_owly_photo.__hash__())
         self.assertNotEqual(owly_photo.image_url, different_owly_photo.image_url)
         
