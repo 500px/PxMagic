@@ -1,8 +1,10 @@
 500px Python SDK
 ================
 This a python version for [500px](http://500px.com/ "500px") api, http://developer.500px.com/  
-This SDK is still in development, following the TODO List. Fell free to add pull requests or issues.
 
+**Warning:** This SDK is still in active development. 
+If you would like to get involved feel free to contact
+zachaysan or arthurnn on github or at 500px.com.
 
 Installation
 ------------
@@ -20,11 +22,5 @@ To try without installing
 
 To run test suite
 -----------------
-```python -m discover ````
-
-TODO list
----------
-
-* Implement the OAuth
-* Implement the POST methods to the API
-* Implement the rest of the get requests
+1. Turn on oauth testing by editing config/test_settings.json (requires chrome browser)
+2. ```python -m discover ````
