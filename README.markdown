@@ -23,4 +23,4 @@ To try without installing
 To run test suite
 -----------------
 1. Turn on oauth testing by editing config/test_settings.json (requires chrome browser)
-2. ```python -m discover ````
+2. ```python -m discover ```
