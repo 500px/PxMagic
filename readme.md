@@ -10,7 +10,7 @@ Installation
 ### To install:
 1.  ```python setup.py build ```
 2.  ```sudo python setup.py install ```
-
+3.  ```sudo pip install git+git://github.com/simplegeo/python-oauth2.git ``` (oauth users only)
 To try without installing
 -------------------------	
 ```python -m examples.fetchphotos ```
