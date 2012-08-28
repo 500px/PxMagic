@@ -5,6 +5,7 @@
 # we do not want a sloppy developer to do a pull request
 # with their creds accidentally.
 config/authentication.json
+config/authentication.json.preprod
 
 # Ignore editor generated files.
 *~
