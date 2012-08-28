@@ -4,18 +4,19 @@ Created by @arthurnn on 2012-01-19.
 
 import urllib
 from helpers.json_finder import _parse_json
-from helpers.http import safe_urlopen, smart_urlencode
+from helpers.http import safe_urlopen, smart_urlencode, build_oauth_client
 from pprint import pprint
 class FiveHundredPx(object):
     BASE_URL = 'https://api.500px.com/v1'
     
-    def __init__(self, consumer_key):
+    def __init__(self, consumer_key, consumer_secret):
         """For more info on the API visit developer.500px.com.
         If you are logged in to your 500px account you can 
         go to: http://500px.com/settings/applications to retrieve
         your key.
         """
         self.consumer_key = consumer_key
+        self.consumer_secret = consumer_secret
 
     def request(self, path, post_args=None, **kwargs):
         """Handles the actual request to 500px. Posting has yet 
@@ -28,7 +29,13 @@ class FiveHundredPx(object):
         encoded_kwargs = smart_urlencode(kwargs)
         full_url = FiveHundredPx.BASE_URL + path + "?" + encoded_kwargs
         with safe_urlopen(full_url, post_data) as file_resp:
-            response = _parse_json(file_resp.read())
+            file_contents = file_resp.read()
+            response = None
+            try:
+                response = _parse_json(file_contents)
+            except:
+                print file_contents
+                print full_url
         return response
 
     def search_photos(self, **kwargs):
@@ -70,14 +77,75 @@ class FiveHundredPx(object):
         data = self.request('/photos/%d' % id, **kwargs)
         return data
 
-    def get_user(self, id, **kwargs):
+    def get_user(self, user_id, authorized_client=None, **kwargs):
         if 'username' in kwargs:
             raise NotImplementedError
         if 'email' in kwargs:
             raise NotImplementedError
-        data = self.request('/users/%d' % id, **kwargs)
+        if authorized_client:
+            url = FiveHundredPx.BASE_URL + '/users'
+            data = self.use_authorized_client(authorized_client, url, **kwargs)
+        else:
+            data = self.request('/users/%d' % user_id, **kwargs)
         return data
 
+    def get_user_friends(self, user_id):
+        page = 1
+        while True:
+            data = self.request('/users/%s/friends' % user_id, page=page)
+            assert(page == data['page'])
+            for friend in data['friends']:
+                yield friend
+            if page == data['friends_pages']:
+                break
+            page += 1
+
+    def get_user_followers(self, user_id):
+        page = 1
+        while True:
+            data = self.request('/users/%s/followers' % user_id, page=page)
+            assert(page == data['page'])
+            for follower in data['followers']:
+                yield follower
+            if page == data['followers_pages']:
+                break
+            page += 1
+
+    def use_authorized_client(self,
+                              authorized_client,
+                              url,
+                              post_args=None,
+                              **kwargs):
+        if not post_args:
+            data = _parse_json(authorized_client.get(url, **kwargs).content)
+        else:
+            raise NotImplementedError
+        return data
+
+    def sample_auth_url_fn(self, authorization_url):
+        from subprocess import call
+        call(["google-chrome",authorization_url])
+        accepted = 'n'
+        while accepted.lower() == 'n':
+            accepted = raw_input('Have you authorized me? (y/n) ')
+
+    def get_authorized_client(self, 
+                              auth_url_fn=None,
+                              **kwargs):
+        if not auth_url_fn:
+            auth_url_fn = self.sample_auth_url_fn
+            
+        request_url = FiveHundredPx.BASE_URL + "/oauth/request_token"
+        authorize_url = FiveHundredPx.BASE_URL + "/oauth/authorize"
+        access_token_url = FiveHundredPx.BASE_URL + "/oauth/access_token"
+        
+        return build_oauth_client(request_url,
+                                  authorize_url,
+                                  access_token_url,
+                                  self.consumer_key,
+                                  self.consumer_secret,
+                                  auth_url_fn)    
+        
     def _set_consumer_key_to_args_(self, post_args, kwargs):
         if post_args is not None:
             post_args["consumer_key"] = self.consumer_key
