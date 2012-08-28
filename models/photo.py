@@ -10,7 +10,8 @@ def Photo(id):
     return photo(id)
 
 class photo(magic_object):
-    five_hundred_px = fivehundred.FiveHundredPx(authentication.get_consumer_key())
+    five_hundred_px = fivehundred.FiveHundredPx(authentication.get_consumer_key(),
+                                                authentication.get_consumer_secret())
     def __init__(self, id):
         self.id = id
         data = photo.five_hundred_px.get_photo(id)
