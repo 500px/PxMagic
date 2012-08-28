@@ -4,19 +4,25 @@
 Created by @arthurnn on 2012-01-19.
 """
 
-import sys
-import os
 import urllib
 from StringIO import StringIO
-from fivehundred import *
+try:
+    from fivehundred import *
+except ImportError:
+    from src.fivehundred import *
+    from helpers.authentication import get_consumer_key
 
-CONSUMER_KEY = '__your_consumer_key__' # Get one @ developer.500px.com
+CONSUMER_KEY = get_consumer_key()
+
 def main():
     api = FiveHundredPx(CONSUMER_KEY)
 
-    photos = api.search_photos('sao paulo', {'rpp': 10, 'image_size[]': [3,4]})['photos']
+    kwargs = dict(term='sao paulo',
+                  rpp=10,
+                  image_size=[3,4])
+
+    photos = api.search_photos(**kwargs)['photos']
     for p in photos:
-        #print p
         thumbnail_url = p['image_url']
         fhpx_url = 'http://500px.com/photo/%d' % p['id']
         
@@ -29,4 +35,3 @@ def main():
 
 if __name__ == '__main__':
 	main()
-

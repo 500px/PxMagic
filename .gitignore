@@ -1,1 +1,17 @@
 .DS_Store
+
+# Since intended use is to rename authentication.json.example
+# to authentication.json once key + secret has been added
+# we do not want a sloppy developer to do a pull request
+# with their creds accidentally.
+config/authentication.json
+config/authentication.json.preprod
+
+# Ignore editor generated files.
+*~
+
+# Ignore python compiled files.
+*.pyc
+
+# Ignore bash helper
+run_current.sh
