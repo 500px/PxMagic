@@ -1,20 +1,21 @@
 from src import fivehundred
 from helpers import authentication
-from models.user import User
+
+import models.user as user
 
 from magic.magic_cache import magic_cache, magic_fn_cache
 from magic.magic_object import magic_object
 
 @magic_fn_cache
-def Photo(id):
+def Photo(id, *args, **kwargs):
     return photo(id)
 
 class photo(magic_object):
     five_hundred_px = fivehundred.FiveHundredPx(authentication.get_consumer_key(),
                                                 authentication.get_consumer_secret())
-    def __init__(self, id):
+    def __init__(self, id, data=None):
         self.id = id
-        data = photo.five_hundred_px.get_photo(id)
+        data = data or photo.five_hundred_px.get_photo(id)
         photo_data = data["photo"]
         self.add_photo_data(photo_data)
         
@@ -83,7 +84,7 @@ class photo(magic_object):
         
     @magic_cache
     def _get_user_(self, user_id):
-        return User(self.user_id)
+        return user.User(self.user_id)
 
     def __dir__(self):
         results = ['aperture',
