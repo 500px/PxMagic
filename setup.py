@@ -7,7 +7,7 @@ setup(
     version='0.1',
     description='This is a wrapper for the 500px api.',
     author='arthurnn',
-    url='https://github.com/arthurnn/fivehundred-python',
+    url='https://github.com/zachaysan/fivehundred-python',
     package_dir={'': 'src'},
     py_modules=[
         'fivehundred',
