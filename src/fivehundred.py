@@ -110,12 +110,55 @@ class FiveHundredPx(object):
             if page == data['followers_pages']:
                 break
             page += 1
+            
+    def get_user_collections(self, authorized_client=None, user_id=None):
+        data = None
+        if user_id and not authorized_client:
+            # User Collections have not been implemented for public 
+            # queries to the API
+            raise NotImplementedError
+        elif user_id and authorized_client:
+            # this should be handled by check to see if the user
+            # id is the same as the owner of the authorized client
+            # if it is, it should go through fine, otherwise it 
+            # is not currently supported by the api
+            raise NotImplementedError
+        elif not authorized_client:
+            assert(user_id)
+            # this default case is interesting because it could be 
+            # used to pull down all public collections. Hard to tell,
+            # requires thought and possible api build out
+            raise NotImplementedError
+        elif authorized_client:
+            assert(not user_id)
+            url = FiveHundredPx.BASE_URL + '/collections'
+            data = self.use_authorized_client(authorized_client, url)
+        else:
+            # this is an undefined state that should never be entered.
+            # but since this portion of code needs to expansion, it needs
+            # to be resistant against someone altering it in such a way 
+            # that lets a case though.
+            assert(False)
+        return data["collections"]
+
+    def get_collection(self, collection_id, authorized_client=None):
+        url = FiveHundredPx.BASE_URL + '/collections/%s' % collection_id
+        data = None
+        if authorized_client:
+            data = self.use_authorized_client(authorized_client, url)
+        else:
+            # Despite api documentation to the contrary, this call
+            # actually does require api authentication
+            raise NotImplementedError
+            data = self.request(url)
+        return data
 
     def use_authorized_client(self,
                               authorized_client,
                               url,
                               post_args=None,
                               **kwargs):
+        data = None
         if not post_args:
             data = _parse_json(authorized_client.get(url, **kwargs).content)
         else:
