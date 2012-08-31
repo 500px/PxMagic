@@ -1,1 +1,2 @@
-{"oauth": false}
+{"oauth": false,
+ "ignore_known_failing_tests": true}

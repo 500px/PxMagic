@@ -39,7 +39,15 @@ class Test_retrieve_user(unittest.TestCase):
         self.assertEqual(self.zachaysan.friends[olegs_id].username, olegs_username)
 
     def test_friends_auto_build_needed_data(self):
-        pass
+        """ Since less data is sent from the api when 
+        pulling a list of friends, we need the user
+        model to update itself if we request an attribute
+        that it should have automatically.
+        """
+        evgenys_id = 1
+        self.assertTrue('affection' in dir(self.zachaysan.friends[evgenys_id]))
+        self.assertTrue(self.zachaysan.friends[evgenys_id].affection > 5)
+        
 
     def test_followers(self):
         evgenys_id = 1
@@ -49,7 +57,30 @@ class Test_retrieve_user(unittest.TestCase):
         self.assertIn(evgenys_username, self.zachaysan.followers)
 
         self.assertEqual(self.zachaysan.followers[evgenys_id].username, evgenys_username)
-    
+
+    def test_followers_auto_build_needed_data(self):
+        """ Since less data is sent from the api when 
+        pulling a list of friends, we need the user
+        model to update itself if we request an attribute
+        that it should have automatically.
+        """
+        evgenys_id = 1
+        self.assertTrue('affection' in dir(self.zachaysan.friends[evgenys_id]))
+        self.assertTrue(self.zachaysan.friends[evgenys_id].affection > 5)
+        
+    def test_collection_pulling(self):
+        if not self.test_settings['ignore_known_failing_tests']:
+            evgenys_id = 1
+            evgeny = User(evgenys_id)
+            self.assertTrue(evgeny.collections)
+ 
+    def test_self_collection_pulling_with_oauth(self):
+        if self.test_settings['oauth']:
+            zachaysan = User(403022, authorize=True)
+            zachaysan.collections
+            self.assertTrue(hasattr(zachaysan, 'collections'))
+            self.assertIn(383355, zachaysan.collections)
+            
     def test_asking_for_an_oauth_only_resource_from_a_nonowned_user_id(self):
         pass
     
