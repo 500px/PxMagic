@@ -18,3 +18,7 @@ fhp.egg-info/
 
 # Ignore bash helper
 run_current.sh
+
+# Ignore sensitive files
+fhp/config/authentication.json
+fhp/config/authentication.json.preprod
