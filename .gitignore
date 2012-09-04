@@ -10,8 +10,11 @@ config/authentication.json.preprod
 # Ignore editor generated files.
 *~
 
-# Ignore python compiled files.
+# Ignore python compiled files and generated directories.
 *.pyc
+build/
+dist/
+fhp.egg-info/
 
 # Ignore bash helper
 run_current.sh

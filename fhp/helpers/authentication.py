@@ -1,4 +1,4 @@
-from helpers.json_finder import _parse_json
+from fhp.helpers.json_finder import _parse_json
 import os
 
 def get_consumer_key():
@@ -7,7 +7,8 @@ def get_consumer_key():
     go to: http://500px.com/settings/applications to retrieve
     your key.
     """
-    with open(os.path.join('config','authentication.json')) as f:
+    
+    with open(os.path.join('fhp','config','authentication.json')) as f:
         auth = _parse_json(f.read())
         return auth["authentication"]["consumer_key"]
 
@@ -17,6 +18,6 @@ def get_consumer_secret():
     go to: http://500px.com/settings/applications to retrieve
     your key.
     """
-    with open(os.path.join('config','authentication.json')) as f:
+    with open(os.path.join('fhp','config','authentication.json')) as f:
         auth = _parse_json(f.read())
         return auth["authentication"]["consumer_secret"]
