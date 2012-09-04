@@ -1,5 +1,5 @@
 import urllib
-from helpers.json_finder import _parse_json
+from fhp.helpers.json_finder import _parse_json
 from oauth_hook import OAuthHook
 import requests
 

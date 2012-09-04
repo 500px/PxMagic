@@ -1,12 +1,12 @@
 import unittest
 import os
-from models.user import User
-from helpers.json_finder import _parse_json
+from fhp.models.user import User
+from fhp.helpers.json_finder import _parse_json
 
 class Test_retrieve_user(unittest.TestCase):
     def setUp(self):
         self.zachaysan = User(403022)
-        with open(os.path.join('config', 'test_settings.json')) as f:
+        with open(os.path.join('fhp', 'config', 'test_settings.json')) as f:
             self.test_settings = _parse_json(f.read())
 
     def test_init(self):

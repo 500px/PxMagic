@@ -1,4 +1,4 @@
-from magic.cache import Cache
+from fhp.magic.cache import Cache
 
 class Caches(object):
     def __init__(self):

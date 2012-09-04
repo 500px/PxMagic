@@ -1,5 +1,5 @@
 import unittest
-from models.photo import Photo
+from fhp.models.photo import Photo
 
 class Test_retrieve_photo(unittest.TestCase):
     def setUp(self):

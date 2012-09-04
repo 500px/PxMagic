@@ -1,7 +1,7 @@
 from functools import wraps
 import warnings
 
-from magic.caches import Caches
+from fhp.magic.caches import Caches
 
 def magic_cache(method):
     @wraps(method)

@@ -7,10 +7,14 @@ Created by @arthurnn
 import urllib
 from StringIO import StringIO
 try:
-    from fivehundred import *
+    from fhp import helpers
+    get_consumer_key = helpers.authentication.get_consumer_key 
+    get_consumer_secret = helpers.authentication.get_consumer_secret
+    from fhp import src
+    FiveHundredPx = src.fivehundred.FiveHundredPx
 except ImportError:
-    from src.fivehundred import *
-    from helpers.authentication import get_consumer_key
+    from fhp.src.fivehundred import *
+    from fhp.helpers.authentication import get_consumer_key,get_consumer_secret
 
 pil_exists = None
 
@@ -21,9 +25,10 @@ except ImportError:
     print "no Pil"
 
 CONSUMER_KEY = get_consumer_key()
+CONSUMER_SECRET = get_consumer_secret()
 
 def main():
-    api = FiveHundredPx(CONSUMER_KEY)
+    api = FiveHundredPx(CONSUMER_KEY, CONSUMER_SECRET)
     generator = api.get_photos(feature='popular',limit=3)
     for p in generator:
         thumbnail_url = p['image_url']
@@ -34,7 +39,6 @@ def main():
         if pil_exists:
             img = Image.open(im)
             img.show()
-        
         try:
             print '(%s,%s)' % (thumbnail_url,fhpx_url)
         except Exception, e:

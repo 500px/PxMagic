@@ -1,0 +1,3 @@
+import test_collections
+import test_photo
+import test_user

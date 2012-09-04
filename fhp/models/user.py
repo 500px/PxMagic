@@ -1,10 +1,10 @@
-from src import fivehundred
-from helpers import authentication
+from fhp.src import fivehundred
+from fhp.helpers import authentication
 
-import models.collection
+import fhp.models.collection
 
-from magic.magic_cache import magic_cache, magic_fn_cache
-from magic.magic_object import magic_object
+from fhp.magic.magic_cache import magic_cache, magic_fn_cache
+from fhp.magic.magic_object import magic_object
 
 @magic_fn_cache
 def User(id, *args, **kwargs):

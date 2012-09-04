@@ -3,8 +3,8 @@ Created by @arthurnn on 2012-01-19.
 """
 
 import urllib
-from helpers.json_finder import _parse_json
-from helpers.http import safe_urlopen, smart_urlencode, build_oauth_client
+from fhp.helpers.json_finder import _parse_json
+from fhp.helpers.http import safe_urlopen, smart_urlencode, build_oauth_client
 from pprint import pprint
 class FiveHundredPx(object):
     BASE_URL = 'https://api.500px.com/v1'

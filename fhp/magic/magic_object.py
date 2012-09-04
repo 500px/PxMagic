@@ -1,4 +1,4 @@
-from magic.caches import Caches
+from fhp.magic.caches import Caches
 
 class magic_object(object):
     def empty_cache(self, *args, **kwargs):

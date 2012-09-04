@@ -1,10 +1,10 @@
-from src import fivehundred
-from helpers import authentication
+from fhp.src import fivehundred
+from fhp.helpers import authentication
 
-import models.user as user
+import fhp.models
 
-from magic.magic_cache import magic_cache, magic_fn_cache
-from magic.magic_object import magic_object
+from fhp.magic.magic_cache import magic_cache, magic_fn_cache
+from fhp.magic.magic_object import magic_object
 
 @magic_fn_cache
 def Photo(id, *args, **kwargs):
@@ -84,7 +84,7 @@ class photo(magic_object):
         
     @magic_cache
     def _get_user_(self, user_id):
-        return user.User(self.user_id)
+        return fhp.models.user.User(self.user_id)
 
     def __dir__(self):
         results = ['aperture',
