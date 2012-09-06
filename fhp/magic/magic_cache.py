@@ -13,7 +13,17 @@ def magic_cache(method):
         else:
             setattr(self, cache_name, Caches())
         if not result:
-            result = method(self, *args, **kwargs)
+            try:
+                result = method(self, *args, **kwargs)
+            except Exception, e:
+                # Honestly, I consider this a bug in Python
+                warning = """Exception in a magically cached method
+                Depending on your implementation
+                if you use __getattr__, for example
+                the Exception may silently fail, this was the exception:
+                """
+                warning += str(e)
+                warnings.warn(warning)
             caches = getattr(self, cache_name)
             caches[(args, kwargs)] = result
         return result
@@ -28,9 +38,13 @@ class MagicFunctionCache(object):
         def function_wrapper(*args, **kwargs):
             from pprint import pprint
             result = None
+            force_fn_call = False
+            if 'force_fn_call' in kwargs:
+                force_fn_call = kwargs['force_fn_call']
+                del(kwargs['force_fn_call'])
             if function not in self.caches:
                 self.caches[function] = Caches()
-            if 'force_fn_call' in kwargs:
+            if force_fn_call:
                 del(kwargs['force_fn_call'])
                 result = self.get_and_set_cache(function, *args, **kwargs)
             else:
