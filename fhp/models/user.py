@@ -2,6 +2,7 @@ from fhp.src import fivehundred
 from fhp.helpers import authentication
 
 import fhp.models.collection
+import fhp.models.blog_post
 
 from fhp.magic.magic_cache import magic_cache, magic_fn_cache
 from fhp.magic.magic_object import magic_object
@@ -13,6 +14,7 @@ def User(id, *args, **kwargs):
 class user(magic_object):
     five_hundred_px = fivehundred.FiveHundredPx(authentication.get_consumer_key(),
                                                 authentication.get_consumer_secret())
+    
 
     def __init__(self, id, data=None, authorize=False):
         self.id = id
@@ -40,6 +42,9 @@ class user(magic_object):
         elif name == 'collections':
             self._get_collections_()
             return self.collections
+        elif name == 'blog_posts':
+            self._get_blog_posts_()
+            return self.blog_posts
         elif name in dir(self):
             new_user_data = self.get_long_public_user_data()["user"]
             self.add_user_data(new_user_data)
@@ -77,7 +82,16 @@ class user(magic_object):
         collections = user.five_hundred_px.get_user_collections(**kwargs)
         for collection in collections:
             col_id = collection["id"]
-            self.collections[col_id] = models.collection.Collection(col_id, collection)
+            self.collections[col_id] = fhp.models.collection.Collection(col_id, collection)
+    @magic_cache
+    def _get_blog_posts_(self):
+        self.blog_posts = {}
+        for blog_post in user.five_hundred_px.get_user_blog_posts(self.id):
+            blog_post_id = blog_post['id']
+            data = {"blog_post": blog_post}
+            self.blog_posts[blog_post_id] = fhp.models.blog_post.BlogPost(blog_post_id,
+                                                                      data=data,
+                                                                      user=self)
 
     def __dir__(self):
         results = ['domain',
@@ -105,5 +119,6 @@ class user(magic_object):
                    'country',
                    'fotomoto_on',
                    'fullname',
-                   'affection']
+                   'affection',
+                   'blog_posts']
         return results
