@@ -110,6 +110,21 @@ class FiveHundredPx(object):
             if page == data['followers_pages']:
                 break
             page += 1
+
+    def get_user_blog_posts(self, user_id):
+        page = 1
+        while True:
+            data = self.request('/blogs',
+                                feature='user',
+                                user_id=user_id,
+                                page=page,
+                                rpp=99)
+            assert(page == data['current_page'])
+            for blog_post in data['blog_posts']:
+                yield blog_post
+            if page == data['total_pages']:
+                break
+            page += 1
             
     def get_user_collections(self, authorized_client=None, user_id=None):
         data = None
