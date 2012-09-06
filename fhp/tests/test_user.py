@@ -38,12 +38,24 @@ class Test_retrieve_user(unittest.TestCase):
 
         self.assertEqual(self.zachaysan.friends[olegs_id].username, olegs_username)
 
+    def test_stories(self):
+        olegs_id = 2
+        oleg = User(olegs_id)
+        oleg.blog_posts
+        self.assertTrue(hasattr(oleg, 'blog_posts'))
+        """ Oleg wrote the first blog post :) """
+        self.assertIn(1, oleg.blog_posts)
+
+    def test_story_retrival_in_proper_order(self):
+        pass
+
     def test_friends_auto_build_needed_data(self):
         """ Since less data is sent from the api when 
         pulling a list of friends, we need the user
         model to update itself if we request an attribute
         that it should have automatically.
         """
+        self.assertTrue(hasattr(self.zachaysan, 'friends'))
         evgenys_id = 1
         self.assertTrue('affection' in dir(self.zachaysan.friends[evgenys_id]))
         self.assertTrue(self.zachaysan.friends[evgenys_id].affection > 5)
@@ -52,7 +64,7 @@ class Test_retrieve_user(unittest.TestCase):
     def test_followers(self):
         evgenys_id = 1
         evgenys_username = 'tchebotarev'
-        
+        self.assertTrue(hasattr(self.zachaysan, 'followers'))
         self.assertIn(evgenys_id, self.zachaysan.followers)
         self.assertIn(evgenys_username, self.zachaysan.followers)
 
