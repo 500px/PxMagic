@@ -8,20 +8,42 @@ from fhp.magic.magic_cache import magic_cache, magic_fn_cache
 from fhp.magic.magic_object import magic_object
 
 @magic_fn_cache
-def User(id, *args, **kwargs):
-    return user(id, *args, **kwargs)
+def User(id=None, username=None, email=None, *args, **kwargs):
+    if email:
+        raise NotImplementedError
+    if not bool(id) != bool(username):
+        raise TypeError, "user requires exactly 1 of id, username"
+    if username and username in User.username_cache:
+        user_id = User.username_cache[username]
+        return User(user_id, *args, **kwargs)  
+    elif username:
+        u = user(username=username, *args, **kwargs)
+        return User(u.id, forced_return_value=u, *args, **kwargs)
+    u = user(id, *args, **kwargs)
+    User.username_cache[u.username] = u.id
+    return u
+User.username_cache = {}
 
 class user(magic_object):
     five_hundred_px = fivehundred.FiveHundredPx(authentication.get_consumer_key(),
                                                 authentication.get_consumer_secret())
-    
 
-    def __init__(self, id, data=None, authorize=False):
-        self.id = id
+    def __init__(self,
+                 id=None,
+                 username=None,
+                 email=None,
+                 data=None,
+                 authorize=False):
+        if email:
+            raise NotImplementedError
+
+        if not bool(id) != bool(username):
+            raise TypeError, "user requires exactly 1 of id, username"
+        
         self.authorized_client = None
         if authorize:
             self.authorize()
-        data = data or self.get_long_public_user_data()
+        data = data or self.get_long_public_user_data(id, username)
         user_data = data["user"]
         self.add_user_data(user_data)
 
@@ -46,14 +68,22 @@ class user(magic_object):
             self._get_blog_posts_()
             return self.blog_posts
         elif name in dir(self):
-            new_user_data = self.get_long_public_user_data()["user"]
+            data = self.get_long_public_user_data(self.id,
+                                                  self.authorized_client)
+            new_user_data = data["user"]
             self.add_user_data(new_user_data)
             return getattr(self, name)
         else:
-            raise AttributeError
+            raise AttributeError, name
 
-    def get_long_public_user_data(self):
-        return user.five_hundred_px.get_user(self.id, self.authorized_client)
+    def get_long_public_user_data(self, id=None, username=None):
+        if id:
+            result = user.five_hundred_px.get_user_by_id(id, self.authorized_client)
+        elif username:
+            result = user.five_hundred_px.get_user_by_username(username, self.authorized_client)
+        else:
+            raise NotImplementedError
+        return result
 
     @magic_cache
     def _get_friends_(self):
