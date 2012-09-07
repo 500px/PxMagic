@@ -5,7 +5,7 @@ from setuptools import find_packages
  
 
 setup(
-    name='PxMagic',
+    name='fhp',
     version='0.1.4',
     description='This is a wrapper for the 500px api.',
     author='500px',

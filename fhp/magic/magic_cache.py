@@ -36,7 +36,6 @@ class MagicFunctionCache(object):
     def __call__(self, function):
         @wraps(function)
         def function_wrapper(*args, **kwargs):
-            from pprint import pprint
             result = None
             force_fn_call = False
             if 'force_fn_call' in kwargs:

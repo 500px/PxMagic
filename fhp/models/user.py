@@ -8,14 +8,25 @@ from fhp.magic.magic_cache import magic_cache, magic_fn_cache
 from fhp.magic.magic_object import magic_object
 
 @magic_fn_cache
-def User(id=None, username=None, email=None, *args, **kwargs):
+def User(id=None, username=None, email=None, data=None, *args, **kwargs):
     if email:
         raise NotImplementedError
     if not bool(id) != bool(username):
         raise TypeError, "user requires exactly 1 of id, username"
+    
+    if data and len(data) == 1 and 'user' in data and not args and not kwargs:
+        if id:
+            u = User(id)
+        elif username:
+            u = User(username)
+        elif email:
+            raise NotImplementedError
+        u.add_user_data(data['user'])
+        return u
+
     if username and username in User.username_cache:
         user_id = User.username_cache[username]
-        return User(user_id, *args, **kwargs)  
+        return User(user_id, *args, **kwargs)
     elif username:
         u = user(username=username, *args, **kwargs)
         return User(u.id, forced_return_value=u, *args, **kwargs)
@@ -87,7 +98,10 @@ class user(magic_object):
 
     @magic_cache
     def _get_friends_(self):
+        # Some debate in my head over whether self.friends 
+        # should be a generator instead. Depends on use-case.
         self.friends = {}
+
         for friend in user.five_hundred_px.get_user_friends(self.id):
             friend_id = friend['id']
             friend_username = friend['username']
@@ -97,7 +111,10 @@ class user(magic_object):
         
     @magic_cache
     def _get_followers_(self):
+        # Some debate in my head over whether self.followers 
+        # should be a generator instead. Depends on use-case.
         self.followers = {}
+
         for follower in user.five_hundred_px.get_user_followers(self.id):
             follower_id = follower['id']
             follower_username = follower['username']

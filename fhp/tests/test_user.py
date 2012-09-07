@@ -52,6 +52,24 @@ class Test_retrieve_user(unittest.TestCase):
         self.assertIn(olegs_username, self.zachaysan.friends)
 
         self.assertEqual(self.zachaysan.friends[olegs_id].username, olegs_username)
+    
+    def test_friends_is_same_object_when_before(self):
+        evgenys_id = 1
+        evgenys_username = 'tchebotarev'
+        
+        self.assertIn(evgenys_id, self.zachaysan.friends)
+        evgeny = User(evgenys_id)
+        self.assertEqual(self.zachaysan.friends[evgenys_id].__hash__(),
+                         evgeny.__hash__())
+
+    def test_friends_is_same_object_when_after(self):
+        evgenys_id = 1
+        evgenys_username = 'tchebotarev'
+        evgeny = User(evgenys_id)
+        zachaysan = User(username='zachaysan')
+        self.assertIn(evgenys_id, self.zachaysan.friends)
+        self.assertEqual(self.zachaysan.friends[evgenys_id].__hash__(),
+                         evgeny.__hash__())
 
     def test_stories(self):
         olegs_id = 2
@@ -94,7 +112,7 @@ class Test_retrieve_user(unittest.TestCase):
         evgenys_id = 1
         self.assertTrue('affection' in dir(self.zachaysan.friends[evgenys_id]))
         self.assertTrue(self.zachaysan.friends[evgenys_id].affection > 5)
-        
+    
     def test_collection_pulling(self):
         if not self.test_settings['ignore_known_failing_tests']:
             evgenys_id = 1
@@ -112,4 +130,16 @@ class Test_retrieve_user(unittest.TestCase):
         pass
 
     def test_auto_photo_creation(self):
+        pass
+
+    def test_user_search(self):
+        pass
+    
+    def test_follow_user(self):
+        pass
+
+    def test_unfollow_user(self):
+        pass
+
+    def test_super_amounts_of_magic_in_user_dont_interfere_with_force_fn_call(self):
         pass
