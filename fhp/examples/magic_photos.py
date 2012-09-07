@@ -1,4 +1,4 @@
-from models.photo import Photo
+from fhp.models.photo import Photo
 
 from pprint import pprint
 

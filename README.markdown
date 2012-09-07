@@ -19,7 +19,7 @@ To try without installing
 ```python -m fhp.examples.fetchphotos ```
 
 ### Or for some magic object fun:
-```python -m examples.magic_photos ```
+```python -m fhp.examples.magic_photos ```
 
 To run test suite
 -----------------
