@@ -22,7 +22,7 @@ try:
     from PIL import Image
     pil_exists = True
 except ImportError:
-    print "no Pil"
+    print "no PIL found... try 'pip install PIL' "
 
 CONSUMER_KEY = get_consumer_key()
 CONSUMER_SECRET = get_consumer_secret()
