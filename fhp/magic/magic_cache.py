@@ -42,6 +42,20 @@ class MagicFunctionCache(object):
             if 'force_fn_call' in kwargs:
                 force_fn_call = kwargs['force_fn_call']
                 del(kwargs['force_fn_call'])
+            elif 'forced_return_value' in kwargs:
+                """ This part is a little strange. Essentially, there are times
+                when you want a function to return a certain object with a certain
+                pattern of arguments that are *different* than the ones that called
+                it originally. For example, since you can get a user by both id 
+                and username, the cache would normally hand back two distinct objects
+                but by using recursion and forcing a return value one is able to 
+                make the cache return the same cache by either or all patterns
+                """
+                forced_return_value = kwargs['forced_return_value']
+                del(kwargs['forced_return_value'])
+                self.force_return_value(function,
+                                        forced_return_value,
+                                        *args, **kwargs)
             if function not in self.caches:
                 self.caches[function] = Caches()
             if force_fn_call:
@@ -58,5 +72,8 @@ class MagicFunctionCache(object):
         result = function(*args, **kwargs)
         self.caches[function][(args, kwargs)] = result
         return result
+
+    def force_return_value(self, function, forced_return_value, *args, **kwargs):
+        self.caches[function][(args, kwargs)] = forced_return_value
 
 magic_fn_cache = MagicFunctionCache()
