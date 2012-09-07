@@ -42,3 +42,44 @@ class Test_retrieve_photo(unittest.TestCase):
     def test_photo_autogens_user(self):
         user = self.owly_photo.user
         self.assertEqual(user.username, 'AlexThomson')
+
+    def test_edit_photo(self):
+        pass
+        
+    def test_photo_comments(self):
+        pass
+
+    def test_photo_vote(self):
+        """ Perhaps this method belongs to a user and the method
+        is passed the actual photo object
+        """
+        pass
+    
+    def test_photo_search(self):
+        pass
+    
+    def test_tag_photo(self):
+        pass
+    
+    def test_favorite_photo(self):
+        pass
+    
+    def test_comment_on_photo(self):
+        pass
+    
+    def test_delete_photo(self):
+        pass
+    
+    def test_delete_photo_tag(self):
+        pass
+    
+    def test_delete_photo_favorite(self):
+        pass
+
+    def test_create_photo(self):
+        """ This is a compicated procedure that involves
+        using a two call approach """
+        pass
+    
+    def test_upload_image_to_newly_created_photo_resource(self):
+        pass

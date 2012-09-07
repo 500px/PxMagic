@@ -43,3 +43,19 @@ class Test_retrieve_collection(unittest.TestCase):
         first_blog_post.photos
         self.assertFalse(first_blog_post.photos)
 
+    def test_blog_post_comments(self):
+        pass
+    
+    def test_post_blog_post_comments(self):
+        """ Perhaps this should be in a blog_post_comments test suite """
+        pass
+    
+    def test_delete_blog_post(self):
+        pass
+    
+    def test_edit_blog_post(self):
+        pass
+
+    def test_create_blog_post(self):
+        pass
+

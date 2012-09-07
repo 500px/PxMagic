@@ -32,3 +32,12 @@ class Test_retrieve_collection(unittest.TestCase):
     def test_oauthed_init(self):
         if self.test_settings['oauth']:
             self.assertEqual(self.test_collection.id, 383355)
+            
+    def test_creating_collection(self):
+        pass
+
+    def test_deleting_collection(self):
+        pass
+    
+    def test_editing_collection(self):
+        pass
