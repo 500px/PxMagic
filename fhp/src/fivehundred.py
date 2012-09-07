@@ -77,16 +77,38 @@ class FiveHundredPx(object):
         data = self.request('/photos/%d' % id, **kwargs)
         return data
 
-    def get_user(self, user_id, authorized_client=None, **kwargs):
+    def get_blog_post(self, id):
+        blog_post = self.request('/blogs/%d' % id)
+        return dict(blog_post=blog_post)
+
+    def get_user_by_id(self, user_id, authorized_client=None, **kwargs):
         if 'username' in kwargs:
-            raise NotImplementedError
+            raise TypeError, "get_user_by_id cannot handle a username param"
         if 'email' in kwargs:
-            raise NotImplementedError
+            raise TypeError, "get_user_by_id cannot handle a email param"
         if authorized_client:
+            # This may be done incorrectly. Authorized clients both let you 
+            # do requests as well as pull down user information for the 
+            # authorized user. Right now this basically throws out the user_id.
             url = FiveHundredPx.BASE_URL + '/users'
             data = self.use_authorized_client(authorized_client, url, **kwargs)
         else:
             data = self.request('/users/%d' % user_id, **kwargs)
+        return data
+
+    def get_user_by_username(self, username, authorized_client=None, **kwargs):
+        if 'id' in kwargs:
+            raise TypeError, "get_user_by_username cannot handle a user_id param"
+        if 'email' in kwargs:
+            raise TypeError, "get_user_by_id cannot handle a email param"
+        if authorized_client:
+            # This may be done incorrectly. Authorized clients both let you 
+            # do requests as well as pull down user information for the 
+            # authorized user. Right now this basically throws out the username.
+            url = FiveHundredPx.BASE_URL + '/users'
+            data = self.use_authorized_client(authorized_client, url, **kwargs)
+        else:
+            data = self.request('/users/show', username=username, **kwargs)
         return data
 
     def get_user_friends(self, user_id):

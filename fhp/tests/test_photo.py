@@ -22,9 +22,19 @@ class Test_retrieve_photo(unittest.TestCase):
         same_owly_photo = Photo(3256058)
         self.assertEqual(owly_photo.__hash__(), same_owly_photo.__hash__())
 
-        different_owly_photo = Photo(1763176)
-        self.assertNotEqual(owly_photo.__hash__(), different_owly_photo.__hash__())
-        self.assertNotEqual(owly_photo.image_url, different_owly_photo.image_url)
+        different_users_owly_photo = Photo(1763176)
+        self.assertNotEqual(owly_photo.__hash__(), different_users_owly_photo.__hash__())
+        self.assertNotEqual(owly_photo.image_url, different_users_owly_photo.image_url)
+        
+        self.assertEqual(owly_photo.user.__hash__(),
+                         same_owly_photo.user.__hash__())
+        self.assertNotEqual(owly_photo.user.__hash__(),
+                            different_users_owly_photo.user.__hash__())
+        
+        same_users_different_owly_photo = Photo(3255978)
+        self.assertNotEqual(owly_photo.__hash__(), same_users_different_owly_photo.__hash__())
+        self.assertEqual(owly_photo.user.__hash__(),
+                         same_users_different_owly_photo.user.__hash__())
         
     def test_dir_for_magic_user_generation(self):
         self.assertIn('user', dir(self.owly_photo))
