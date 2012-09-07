@@ -15,6 +15,21 @@ class Test_retrieve_user(unittest.TestCase):
     def test_username(self):
         self.assertEqual(self.zachaysan.username, 'zachaysan')
 
+    def test_init_with_username(self):
+        zachaysan = User(username='zachaysan')
+        self.assertEqual(zachaysan.id, self.zachaysan.id)
+
+    def test_init_with_username_ensure_same_object_as_id_lookup(self):
+        zachaysan = User(username='zachaysan')
+        self.assertEqual(zachaysan.__hash__(),
+                         self.zachaysan.__hash__())
+
+    def test_init_with_username_first_then_id(self):
+        arragorn = User(username='arragorn')
+        arragorn_again = User(1354783)
+        self.assertEqual(arragorn.__hash__(),
+                         arragorn_again.__hash__())
+
     def test_auth_without_oauth(self):
         self.assertFalse(hasattr(self.zachaysan, 'auth'))
         
@@ -95,4 +110,6 @@ class Test_retrieve_user(unittest.TestCase):
             
     def test_asking_for_an_oauth_only_resource_from_a_nonowned_user_id(self):
         pass
-    
+
+    def test_auto_photo_creation(self):
+        pass
