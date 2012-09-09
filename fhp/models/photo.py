@@ -1,3 +1,5 @@
+from functools import partial
+
 from fhp.src import fivehundred
 from fhp.helpers import authentication
 
@@ -5,6 +7,7 @@ import fhp.models
 
 from fhp.magic.magic_cache import magic_cache, magic_fn_cache
 from fhp.magic.magic_object import magic_object
+from fhp.magic.magic_generator import MagicGenerator
 
 @magic_fn_cache
 def Photo(id, *args, **kwargs):
@@ -23,12 +26,15 @@ class photo(magic_object):
         for key in photo_data:
             if key == 'user':
                 continue
+            if key == 'comments':
+                self.add_comments(photo_data[key])
             elif key == 'category':
                 self.add_category_name(photo_data['category'])
             elif key == 'status':
                 self.add_status_name(photo_data['status'])
             setattr(self, key, photo_data[key])
 
+            
     def add_category_name(self, category_number):
         categories = {0: 'Uncategorized',
                       1: 'Celebrities',
@@ -63,6 +69,16 @@ class photo(magic_object):
         else:
             self.category_name = "unknown"
 
+    def _get_comments_(self):
+        iter_source = partial(photo.five_hundred_px.get_photo_comments, self.id)
+        def build_comment(photo_id, comment_data):
+            return fhp.models.photo_comment.PhotoComment(comment_data["id"],
+                                                         photo_id,
+                                                         comment_data)
+        iter_destination = partial(build_comment, self.id)
+        self.comments = MagicGenerator(iter_source=iter_source,
+                                       iter_destination=iter_destination)
+
     def add_status_name(self, status_number):
         status = {8: 'status_uploaded',
                   0: 'status_created',
@@ -78,13 +94,16 @@ class photo(magic_object):
 
     def __getattr__(self, name):
         if name == 'user':
-            return self._get_user_(self.user_id)
+            self._get_user_(self.user_id)
+            return self.user
+        if name == 'comments':
+            self._get_comments_()
+            return self.comments
         else:
             raise AttributeError
         
-    @magic_cache
     def _get_user_(self, user_id):
-        return fhp.models.user.User(self.user_id)
+        self.user = fhp.models.user.User(self.user_id)
 
     def __dir__(self):
         results = ['aperture',
