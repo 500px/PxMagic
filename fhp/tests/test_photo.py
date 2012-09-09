@@ -47,7 +47,8 @@ class Test_retrieve_photo(unittest.TestCase):
         pass
         
     def test_photo_comments(self):
-        pass
+        comment = self.owly_photo.comments.first()
+        self.assertEqual(comment.body, "Awesome. Great capture!")
 
     def test_photo_vote(self):
         """ Perhaps this method belongs to a user and the method
