@@ -213,17 +213,34 @@ class FiveHundredPx(object):
             data = self.request(url)
         return data
 
+    def user_favorites_photo(self, photo_id, authorized_client):
+        url = FiveHundredPx.BASE_URL + '/photos/%s/favorite' % photo_id
+        post_args = ""
+        response = authorized_client.post(url, data=post_args)
+        return response.status_code == 200
+
+    def user_unfavorites_photo(self, photo_id, authorized_client):
+        url = FiveHundredPx.BASE_URL + '/photos/%s/favorite' % photo_id
+        response = authorized_client.delete(url)
+        success = response.status_code == 200
+        if not success:
+            from pprint import pprint
+            pprint(response.__dict__)
+        return success
+
     def use_authorized_client(self,
                               authorized_client,
                               url,
                               post_args=None,
                               **kwargs):
-        data = None
+        resp_data = None
         if not post_args:
-            data = _parse_json(authorized_client.get(url, **kwargs).content)
+            resp_data = _parse_json(authorized_client.get(url, **kwargs).content)
         else:
-            raise NotImplementedError
-        return data
+            resp_data = _parse_json(authorized_client.post(url,
+                                                           data=post_args,
+                                                           **kwargs))
+        return resp_data
 
     def sample_auth_url_fn(self, authorization_url):
         from subprocess import call
