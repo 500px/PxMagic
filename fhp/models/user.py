@@ -1,39 +1,34 @@
+from functools import partial
+
 from fhp.src import fivehundred
 from fhp.helpers import authentication
 
 import fhp.models.collection
 import fhp.models.blog_post
 
-from fhp.magic.magic_cache import magic_cache, magic_fn_cache
+from fhp.magic.magic_cache import magic_cache, MagicFunctionCache
 from fhp.magic.magic_object import magic_object
+from fhp.magic.magic_generator import MagicGenerator
 
-@magic_fn_cache
+user_magic_fn_cache = MagicFunctionCache(ignore_caching_on=["data"])
+
+@user_magic_fn_cache
 def User(id=None, username=None, email=None, data=None, *args, **kwargs):
     if email:
         raise NotImplementedError
     if not bool(id) != bool(username):
         raise TypeError, "user requires exactly 1 of id, username"
-    
-    if data and len(data) == 1 and 'user' in data and not args and not kwargs:
-        if id:
-            u = User(id)
-        elif username:
-            u = User(username)
-        elif email:
-            raise NotImplementedError
-        u.add_user_data(data['user'])
-        return u
-
     if username and username in User.username_cache:
         user_id = User.username_cache[username]
-        return User(user_id, *args, **kwargs)
+        return User(user_id, data=data, *args, **kwargs)
     elif username:
-        u = user(username=username, *args, **kwargs)
-        return User(u.id, forced_return_value=u, *args, **kwargs)
-    u = user(id, *args, **kwargs)
+        u = user(username=username, data=data, *args, **kwargs)
+        return User(u.id, data=data, forced_return_value=u, *args, **kwargs)
+    u = user(id, data=data, *args, **kwargs)
     User.username_cache[u.username] = u.id
     return u
 User.username_cache = {}
+
 
 class user(magic_object):
     five_hundred_px = fivehundred.FiveHundredPx(authentication.get_consumer_key(),
@@ -96,32 +91,42 @@ class user(magic_object):
             raise NotImplementedError
         return result
 
-    @magic_cache
-    def _get_friends_(self):
-        # Some debate in my head over whether self.friends 
-        # should be a generator instead. Depends on use-case.
-        self.friends = {}
+    def find_friend(self, **kwargs):
+        for friend in self.friends:
+            is_match = True
+            for kwarg in kwargs:
+                if not getattr(friend, kwarg) == kwargs[kwarg]:
+                    is_match = False
+            if is_match:
+                return friend
 
-        for friend in user.five_hundred_px.get_user_friends(self.id):
-            friend_id = friend['id']
-            friend_username = friend['username']
-            friend_user = User(friend_id, data={"user": friend})
-            self.friends[friend_id] = friend_user
-            self.friends[friend_username] = friend_user
-        
-    @magic_cache
-    def _get_followers_(self):
-        # Some debate in my head over whether self.followers 
-        # should be a generator instead. Depends on use-case.
-        self.followers = {}
 
-        for follower in user.five_hundred_px.get_user_followers(self.id):
-            follower_id = follower['id']
-            follower_username = follower['username']
-            follower_user = User(follower_id, data={"user": follower})
-            self.followers[follower_id] = follower_user
-            self.followers[follower_username] = follower_user
+    def find_follower(self, **kwargs):
+        for follower in self.followers:
+            is_match = True
+            for kwarg in kwargs:
+                if not getattr(follower, kwarg) == kwargs[kwarg]:
+                    is_match = False
+            if is_match:
+                return follower
             
+    def _get_friends_(self):
+        iter_source = partial(user.five_hundred_px.get_user_friends, self.id)
+        def build_user(data):
+            user_id = data["user"]['id']
+            return User(user_id, data=data)
+        self.friends = MagicGenerator(iter_source=iter_source,
+                                      iter_destination=build_user)
+        
+    def _get_followers_(self):
+        iter_source = partial(user.five_hundred_px.get_user_followers, self.id)
+        def build_user(data):
+            user_id = data["user"]['id']
+            return User(user_id, data=data)
+        self.followers = MagicGenerator(iter_source=iter_source,
+                                      iter_destination=build_user)
+        
+
     @magic_cache
     def _get_collections_(self):
         self.collections = {}
