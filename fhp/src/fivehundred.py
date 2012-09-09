@@ -228,6 +228,12 @@ class FiveHundredPx(object):
             pprint(response.__dict__)
         return success
 
+    def user_likes_photo(self, photo_id, authorized_client):
+        url = FiveHundredPx.BASE_URL + '/photos/%s/vote?vote=1' % photo_id
+        post_args = ""
+        response = authorized_client.post(url, data=post_args)
+        return response.status_code == 200
+
     def use_authorized_client(self,
                               authorized_client,
                               url,
