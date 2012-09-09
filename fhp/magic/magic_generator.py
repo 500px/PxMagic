@@ -26,7 +26,7 @@ class MagicGenerator(object):
             needed_items = float('inf')
         else:
             cached_items = len(self.cache)
-            needed_items = max(0, number - cached_items)
+            needed_items = max(0, number - cached_items + 1)
         generator = (item for item in self)
         while needed_items > 0:
             needed_items -= 1
@@ -39,3 +39,6 @@ class MagicGenerator(object):
     def reset_cache(self):
         self.cache = []
         self.max_length = None
+        
+    def first(self):
+        return self[0]
