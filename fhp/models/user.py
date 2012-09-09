@@ -128,20 +128,30 @@ class user(magic_object):
     
     def favorite(self, photo):
         """ Returns True upon successful favoriting """
-        if hasattr(photo, 'id'):
-            photo_id = photo.id
-        else:
-            photo_id = photo
+        photo_id = self._get_photo_id_(photo)
         return user.five_hundred_px.user_favorites_photo(photo_id,
                                                          self.authorized_client)
     
     def unfavorite(self, photo):
-        if hasattr(photo, 'id'):
-            photo_id = photo.id
-        else:
-            photo_id = photo
+        photo_id = self._get_photo_id_(photo)
         return user.five_hundred_px.user_unfavorites_photo(photo_id,
                                                            self.authorized_client)
+    def _get_photo_id_(self, photo):
+        return photo.id if hasattr(photo, 'id') else photo
+        
+    def like(self, photo):
+        photo_id = self._get_photo_id_(photo)
+        return user.five_hundred_px.user_likes_photo(photo_id,
+                                                     self.authorized_client)
+    
+    def dislike(self, photo):
+        """ Since there is no way in the API to find out if a user is 
+        able to dislike a photo I've decided not to implement it for 
+        now. Remember: A dislike is NOT an unlike. It is a seperate action
+        that only qualified users can take. The vast majority of 500px 
+        users are not able to dislike a photo.
+        """
+        raise NotImplementedError
     
     @magic_cache
     def _get_collections_(self):
