@@ -133,6 +133,16 @@ class Test_retrieve_user(unittest.TestCase):
             self.assertTrue(self.auth_zach.favorite(photo))
             self.assertTrue(self.auth_zach.unfavorite(photo))
 
+    def test_user_likes(self):
+        """ Since there is no way to unlike something with the 
+        500px app / API, we are only left with the option to 
+        have an annoying test where we find something to actually like.
+        """
+        annoying_test = not self.test_settings['ignore_annoying_tests']
+        if self.test_settings['oauth'] and annoying_test:
+            photo = Photo(13473159)
+            self.assertTrue(self.auth_zach.like(photo))
+
     def test_asking_for_an_oauth_only_resource_from_a_nonowned_user_id(self):
         pass
 
