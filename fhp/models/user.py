@@ -17,7 +17,10 @@ def User(id=None, username=None, email=None, data=None, *args, **kwargs):
     if email:
         raise NotImplementedError
     if not bool(id) != bool(username):
-        raise TypeError, "user requires exactly 1 of id, username"
+        error = "user requires exactly 1 of id, username"
+        error += "\n perhaps you meant to use a keyword argument"
+        error += "\n like data=user_data?"
+        raise TypeError, error
     if username and username in User.username_cache:
         user_id = User.username_cache[username]
         return User(user_id, data=data, *args, **kwargs)
