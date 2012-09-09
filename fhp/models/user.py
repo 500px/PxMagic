@@ -125,8 +125,24 @@ class user(magic_object):
             return User(user_id, data=data)
         self.followers = MagicGenerator(iter_source=iter_source,
                                       iter_destination=build_user)
-        
-
+    
+    def favorite(self, photo):
+        """ Returns True upon successful favoriting """
+        if hasattr(photo, 'id'):
+            photo_id = photo.id
+        else:
+            photo_id = photo
+        return user.five_hundred_px.user_favorites_photo(photo_id,
+                                                         self.authorized_client)
+    
+    def unfavorite(self, photo):
+        if hasattr(photo, 'id'):
+            photo_id = photo.id
+        else:
+            photo_id = photo
+        return user.five_hundred_px.user_unfavorites_photo(photo_id,
+                                                           self.authorized_client)
+    
     @magic_cache
     def _get_collections_(self):
         self.collections = {}
