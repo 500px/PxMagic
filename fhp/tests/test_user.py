@@ -41,34 +41,25 @@ class Test_retrieve_user(unittest.TestCase):
     def test_friends(self):
         evgenys_id = 1
         evgenys_username = 'tchebotarev'
-        
-        olegs_id = 2
-        olegs_username = 'oleggutsol'
-
-        self.assertIn(evgenys_id, self.zachaysan.friends)
-        self.assertIn(evgenys_username, self.zachaysan.friends)
-
-        self.assertIn(olegs_id, self.zachaysan.friends)
-        self.assertIn(olegs_username, self.zachaysan.friends)
-
-        self.assertEqual(self.zachaysan.friends[olegs_id].username, olegs_username)
+        friend_evgeny = self.zachaysan.find_friend(id=evgenys_id)
+        self.assertEqual(evgenys_id, friend_evgeny.id)
+        friend_evgeny = self.zachaysan.find_friend(username=evgenys_username)
+        self.assertEqual(evgenys_username, friend_evgeny.username)
     
     def test_friends_is_same_object_when_before(self):
         evgenys_id = 1
-        evgenys_username = 'tchebotarev'
-        
-        self.assertIn(evgenys_id, self.zachaysan.friends)
+        friend_evgeny = self.zachaysan.find_friend(id=evgenys_id)
+        self.assertEqual(evgenys_id, friend_evgeny.id)
         evgeny = User(evgenys_id)
-        self.assertEqual(self.zachaysan.friends[evgenys_id].__hash__(),
+        self.assertEqual(friend_evgeny.__hash__(),
                          evgeny.__hash__())
 
     def test_friends_is_same_object_when_after(self):
         evgenys_id = 1
-        evgenys_username = 'tchebotarev'
         evgeny = User(evgenys_id)
         zachaysan = User(username='zachaysan')
-        self.assertIn(evgenys_id, self.zachaysan.friends)
-        self.assertEqual(self.zachaysan.friends[evgenys_id].__hash__(),
+        friend_evgeny = self.zachaysan.find_friend(id=evgenys_id)
+        self.assertEqual(friend_evgeny.__hash__(),
                          evgeny.__hash__())
 
     def test_stories(self):
@@ -93,25 +84,25 @@ class Test_retrieve_user(unittest.TestCase):
         self.assertTrue('affection' in dir(self.zachaysan.friends[evgenys_id]))
         self.assertTrue(self.zachaysan.friends[evgenys_id].affection > 5)
         
-
     def test_followers(self):
         evgenys_id = 1
         evgenys_username = 'tchebotarev'
         self.assertTrue(hasattr(self.zachaysan, 'followers'))
-        self.assertIn(evgenys_id, self.zachaysan.followers)
-        self.assertIn(evgenys_username, self.zachaysan.followers)
+        follower_evgeny = self.zachaysan.find_follower(id=evgenys_id)
+        self.assertEqual(evgenys_id, follower_evgeny.id)
+        follower_evgeny = self.zachaysan.find_follower(username=evgenys_username)
+        self.assertEqual(evgenys_username, follower_evgeny.username)
 
-        self.assertEqual(self.zachaysan.followers[evgenys_id].username, evgenys_username)
-
-    def test_followers_auto_build_needed_data(self):
+    def test_friends_auto_build_needed_data(self):
         """ Since less data is sent from the api when 
         pulling a list of friends, we need the user
         model to update itself if we request an attribute
         that it should have automatically.
         """
         evgenys_id = 1
-        self.assertTrue('affection' in dir(self.zachaysan.friends[evgenys_id]))
-        self.assertTrue(self.zachaysan.friends[evgenys_id].affection > 5)
+        friend_evgeny = self.zachaysan.find_friend(id=evgenys_id)
+        self.assertTrue('affection' in dir(friend_evgeny))
+        self.assertTrue(friend_evgeny > 5)
     
     def test_collection_pulling(self):
         if not self.test_settings['ignore_known_failing_tests']:

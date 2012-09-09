@@ -22,20 +22,29 @@ class FiveHundredPx(object):
         """Handles the actual request to 500px. Posting has yet 
         to be implemented.
         """
+        log_request = False
+            
         if post_args:
             raise NotImplementedError
         self._set_consumer_key_to_args_(post_args, kwargs)
         post_data = None if post_args is None else urllib.urlencode(post_args)
         encoded_kwargs = smart_urlencode(kwargs)
         full_url = FiveHundredPx.BASE_URL + path + "?" + encoded_kwargs
+        if log_request:
+            print full_url
+            from time import time
+            print time()
         with safe_urlopen(full_url, post_data) as file_resp:
             file_contents = file_resp.read()
+            if log_request:
+                print time()
             response = None
             try:
                 response = _parse_json(file_contents)
             except:
                 print file_contents
                 print full_url
+        
         return response
 
     def search_photos(self, **kwargs):
@@ -111,24 +120,38 @@ class FiveHundredPx(object):
             data = self.request('/users/show', username=username, **kwargs)
         return data
 
-    def get_user_friends(self, user_id):
+    def get_user_friends(self, user_id, skip=None, rpp=100):
+        if skip:
+            page = skip / rpp
+            skip -= page * rpp
+            assert(skip >= 0) 
         page = 1
         while True:
-            data = self.request('/users/%s/friends' % user_id, page=page)
+            data = self.request('/users/%s/friends' % user_id, page=page, rpp=rpp)
             assert(page == data['page'])
             for friend in data['friends']:
-                yield friend
+                if skip:
+                    skip -= 1
+                    continue
+                yield dict(user=friend)
             if page == data['friends_pages']:
                 break
             page += 1
 
-    def get_user_followers(self, user_id):
+    def get_user_followers(self, user_id, skip=None, rpp=100):
+        if skip:
+            page = skip / rpp
+            skip -= page * rpp
+            assert(skip >= 0) 
         page = 1
         while True:
-            data = self.request('/users/%s/followers' % user_id, page=page)
+            data = self.request('/users/%s/followers' % user_id, page=page, rpp=rpp)
             assert(page == data['page'])
             for follower in data['followers']:
-                yield follower
+                if skip:
+                    skip -= 1
+                    continue
+                yield dict(user=follower)
             if page == data['followers_pages']:
                 break
             page += 1
