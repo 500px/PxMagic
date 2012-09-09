@@ -34,7 +34,7 @@ def build_oauth_client(url,
     import urlparse
     
     pre_oauth_hook = OAuthHook(consumer_key=consumer_key,
-                           consumer_secret=consumer_secret)
+                               consumer_secret=consumer_secret)
     response = requests.post(url, hooks={'pre_request': pre_oauth_hook})
     
     qs = urlparse.parse_qs(response.text)

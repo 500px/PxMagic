@@ -1,6 +1,7 @@
 import unittest
 import os
 from fhp.models.user import User
+from fhp.models.photo import Photo
 from fhp.helpers.json_finder import _parse_json
 
 class Test_retrieve_user(unittest.TestCase):
@@ -8,6 +9,8 @@ class Test_retrieve_user(unittest.TestCase):
         self.zachaysan = User(403022)
         with open(os.path.join('fhp', 'config', 'test_settings.json')) as f:
             self.test_settings = _parse_json(f.read())
+        if self.test_settings['oauth']:
+            self.auth_zach = User(403022, authorize=True)
 
     def test_init(self):
         self.assertEqual(self.zachaysan.id, 403022)
@@ -35,7 +38,7 @@ class Test_retrieve_user(unittest.TestCase):
         
     def test_oauth_with_auth(self):
         if self.test_settings['oauth']:
-            api_test_user = User(1264083, authorize=True)
+            api_test_user = self.auth_zach
             self.assertTrue(hasattr(api_test_user, 'auth'))
             
     def test_friends(self):
@@ -112,11 +115,34 @@ class Test_retrieve_user(unittest.TestCase):
  
     def test_self_collection_pulling_with_oauth(self):
         if self.test_settings['oauth']:
-            zachaysan = User(403022, authorize=True)
+            zachaysan = self.auth_zach
             zachaysan.collections
             self.assertTrue(hasattr(zachaysan, 'collections'))
             self.assertIn(383355, zachaysan.collections)
             
+    def test_user_favorites(self):
+        """ Normally I would split these into their own tests, but 
+        they need to proceed sequentially or I may get an error due
+        to trying to "unfavorite" a photo I've already unfavorited.
+        """
+        if self.test_settings['oauth']:
+            photo_id = 10005987
+            self.assertTrue(self.auth_zach.favorite(photo_id))
+            self.assertTrue(self.auth_zach.unfavorite(photo_id))
+            photo = Photo(photo_id)
+            self.assertTrue(self.auth_zach.favorite(photo))
+            self.assertTrue(self.auth_zach.unfavorite(photo))
+
+    def test_user_likes(self):
+        """ Since there is no way to unlike something with the 
+        500px app / API, we are only left with the option to 
+        have an annoying test where we find something to actually like.
+        """
+        annoying_test = not self.test_settings['ignore_annoying_tests']
+        if self.test_settings['oauth'] and annoying_test:
+            photo = Photo(13473159)
+            self.assertTrue(self.auth_zach.like(photo))
+
     def test_asking_for_an_oauth_only_resource_from_a_nonowned_user_id(self):
         pass
 
