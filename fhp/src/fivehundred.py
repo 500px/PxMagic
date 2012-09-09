@@ -120,6 +120,28 @@ class FiveHundredPx(object):
             data = self.request('/users/show', username=username, **kwargs)
         return data
 
+    def get_photo_comments(self, photo_id, skip=None, rpp=20):
+        if rpp != 20:
+            """ It seems this does not work on the API """
+            raise NotImplementedError
+        
+        if skip:
+            page = skip / rpp
+            skip -= page * rpp
+            assert(skip >= 0) 
+        page = 1
+        while True:
+            data = self.request('/photos/%s/comments' % photo_id, page=page, rpp=rpp)
+            assert(page == data['current_page'])
+            for comment in data['comments']:
+                if skip:
+                    skip -= 1
+                    continue
+                yield comment
+            if page == data['total_pages']:
+                break
+            page += 1
+        
     def get_user_friends(self, user_id, skip=None, rpp=100):
         if skip:
             page = skip / rpp
