@@ -30,8 +30,9 @@ def magic_cache(method):
     return wrapper
 
 class MagicFunctionCache(object):
-    def __init__(self):
+    def __init__(self, ignore_caching_on=None):
         self.caches = {}
+        self.ignore_caching_on = ignore_caching_on or []
 
     def __call__(self, function):
         @wraps(function)
@@ -59,16 +60,30 @@ class MagicFunctionCache(object):
                 self.caches[function] = Caches()
             if force_fn_call:
                 del(kwargs['force_fn_call'])
-                result = self.get_and_set_cache(function, *args, **kwargs)
+                result = self.get_and_set_cache(function,
+                                                *args,
+                                                **kwargs)
             else:
-                result = self.caches[function][(args, kwargs)]
+                result = self.get_from_cache(function, *args, **kwargs)
                 if not result:
-                    result = self.get_and_set_cache(function, *args, **kwargs)
+                    result = self.get_and_set_cache(function,
+                                                    *args, **kwargs)
             return result
         return function_wrapper
 
+    def get_from_cache(self, function, *args, **true_kwargs):
+        from copy import copy
+        kwargs = copy(true_kwargs)
+        for kwarg in self.ignore_caching_on:
+            if kwarg in kwargs:
+                del(kwargs[kwarg])
+        return self.caches[function][(args, kwargs)]
+
     def get_and_set_cache(self, function, *args, **kwargs):
         result = function(*args, **kwargs)
+        for kwarg in self.ignore_caching_on:
+            if kwarg in kwargs:
+                del(kwargs[kwarg])
         self.caches[function][(args, kwargs)] = result
         return result
 
