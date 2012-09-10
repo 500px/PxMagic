@@ -155,6 +155,20 @@ class user(magic_object):
         users are not able to dislike a photo.
         """
         raise NotImplementedError
+
+    def comment_on_photo(self, photo, comment_body):
+        photo_id = self._get_photo_id_(photo)
+        response = user.five_hundred_px.user_comments_on_photo(photo_id,
+                                                               comment_body,
+                                                               self.authorized_client)
+
+        """ To stop the photo from incorrectly thinking that it has fully 
+        cached the comments on the photo we increase the max length by 1.
+        of course this will not stop the requirment to nuke the caches 
+        from time to time anyways.
+        """
+        fhp.models.photo.Photo(photo_id).comments.max_length += 1
+        return response
     
     @magic_cache
     def _get_collections_(self):
