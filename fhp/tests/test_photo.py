@@ -50,12 +50,15 @@ class Test_retrieve_photo(unittest.TestCase):
         comment = self.owly_photo.comments.first()
         self.assertEqual(comment.body, "Awesome. Great capture!")
     
-    def test_photo_search(self):
+    def test_user_can_tag_photo(self):
         pass
     
-    def test_tag_photo(self):
-        pass
-    
+    def test_photo_has_tags(self):
+        marching_owl = Photo(897276)
+        self.assertTrue(marching_owl.tags)
+        self.assertIn('marching', marching_owl.tags)
+        self.assertIn('owl', marching_owl.tags)
+
     def test_favorite_photo(self):
         pass
     
