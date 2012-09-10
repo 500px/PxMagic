@@ -143,6 +143,14 @@ class Test_retrieve_user(unittest.TestCase):
             photo = Photo(13473159)
             self.assertTrue(self.auth_zach.like(photo))
 
+    def test_comment_on_photo(self):
+        annoying_test = not self.test_settings['ignore_annoying_tests']
+        if self.test_settings['oauth'] and annoying_test:
+            old_photo = Photo(10)
+            comment_body = """sweet photo Ev! Sorry if this gets posted a 
+bunch of times, I'm testing out the api and there is no delete method in the api"""
+            self.auth_zach.comment_on_photo(old_photo, comment_body)
+
     def test_asking_for_an_oauth_only_resource_from_a_nonowned_user_id(self):
         pass
 
