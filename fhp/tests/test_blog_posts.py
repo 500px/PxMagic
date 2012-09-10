@@ -5,7 +5,7 @@ from fhp.models.user import User
 from fhp.helpers.json_finder import _parse_json
 
 
-class Test_retrieve_collection(unittest.TestCase):
+class Test_retrieve_blog_post(unittest.TestCase):
 
     def setUp(self):
         with open(os.path.join('fhp', 'config', 'test_settings.json')) as f:
@@ -44,10 +44,13 @@ class Test_retrieve_collection(unittest.TestCase):
         self.assertFalse(first_blog_post.photos)
 
     def test_blog_post_comments(self):
-        pass
+        awesome_blog_post_id = 27105
+        awesome_blog_post = BlogPost(awesome_blog_post_id)
+        actual_body = "Absolutely amazing work. If you need anyone to help carry your gear... feel free to give me a shout! :)"
+        self.assertEqual(awesome_blog_post.comments.first().body, actual_body)
     
     def test_post_blog_post_comments(self):
-        """ Perhaps this should be in a blog_post_comments test suite """
+        """ Perhaps this should be in a user test suite """
         pass
     
     def test_delete_blog_post(self):

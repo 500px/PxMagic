@@ -17,7 +17,10 @@ def User(id=None, username=None, email=None, data=None, *args, **kwargs):
     if email:
         raise NotImplementedError
     if not bool(id) != bool(username):
-        raise TypeError, "user requires exactly 1 of id, username"
+        error = "user requires exactly 1 of id, username"
+        error += "\n perhaps you meant to use a keyword argument"
+        error += "\n like data=user_data?"
+        raise TypeError, error
     if username and username in User.username_cache:
         user_id = User.username_cache[username]
         return User(user_id, data=data, *args, **kwargs)
@@ -152,6 +155,30 @@ class user(magic_object):
         users are not able to dislike a photo.
         """
         raise NotImplementedError
+
+    def comment_on_photo(self, photo, comment_body):
+        photo_id = self._get_photo_id_(photo)
+        response = user.five_hundred_px.user_comments_on_photo(photo_id,
+                                                               comment_body,
+                                                               self.authorized_client)
+
+        """ To stop the photo from incorrectly thinking that it has fully 
+        cached the comments on the photo we increase the max length by 1.
+        of course this will not stop the requirment to nuke the caches 
+        from time to time anyways.
+        """
+        fhp.models.photo.Photo(photo_id).comments.max_length += 1
+        return response
+    
+
+    def comment_on_blog_post(self, blog_post, comment_body):
+        blog_post_id = blog_post.id if hasattr(blog_post, 'id') else blog_post
+
+        resp = user.five_hundred_px.user_comments_on_blog_post(blog_post_id,
+                                                               comment_body,
+                                                               self.authorized_client)
+        fhp.models.blog_post.BlogPost(blog_post_id).comments.max_length += 1
+        return resp
     
     @magic_cache
     def _get_collections_(self):
