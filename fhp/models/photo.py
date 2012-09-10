@@ -11,7 +11,7 @@ from fhp.magic.magic_generator import MagicGenerator
 
 @magic_fn_cache
 def Photo(id, *args, **kwargs):
-    return photo(id)
+    return photo(id, *args, **kwargs)
 
 class photo(magic_object):
     five_hundred_px = fivehundred.FiveHundredPx(authentication.get_consumer_key(),
@@ -99,11 +99,18 @@ class photo(magic_object):
         if name == 'comments':
             self._get_comments_()
             return self.comments
+        if name == 'tags':
+            self._get_tags_()
+            return self.tags
         else:
             raise AttributeError
         
     def _get_user_(self, user_id):
         self.user = fhp.models.user.User(self.user_id)
+
+    def _get_tags_(self):
+        data = photo.five_hundred_px.get_photo(self.id, tags=True)
+        self.add_photo_data(data['photo'])
 
     def __dir__(self):
         results = ['aperture',
@@ -147,5 +154,6 @@ class photo(magic_object):
                    'user_id',
                    'user',
                    'votes_count',
-                   'width']
+                   'width',
+                   'tags']
         return results
