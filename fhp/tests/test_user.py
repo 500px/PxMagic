@@ -1,7 +1,10 @@
 import unittest
 import os
+
 from fhp.models.user import User
 from fhp.models.photo import Photo
+from fhp.models.blog_post import BlogPost
+
 from fhp.helpers.json_finder import _parse_json
 
 class Test_retrieve_user(unittest.TestCase):
@@ -151,6 +154,13 @@ class Test_retrieve_user(unittest.TestCase):
 bunch of times, I'm testing out the api and there is no delete method in the api"""
             self.auth_zach.comment_on_photo(old_photo, comment_body)
 
+    def test_comment_on_blog_post(self):
+        annoying_test = not self.test_settings['ignore_annoying_tests']
+        if self.test_settings['oauth'] and annoying_test:
+            working_blog_post = BlogPost(50163)
+            comment_body = "And this is where I work on making comments on stories from the api :) <3"
+            self.auth_zach.comment_on_blog_post(working_blog_post, comment_body)
+        
     def test_asking_for_an_oauth_only_resource_from_a_nonowned_user_id(self):
         pass
 
