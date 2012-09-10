@@ -170,6 +170,16 @@ class user(magic_object):
         fhp.models.photo.Photo(photo_id).comments.max_length += 1
         return response
     
+
+    def comment_on_blog_post(self, blog_post, comment_body):
+        blog_post_id = blog_post.id if hasattr(blog_post, 'id') else blog_post
+
+        resp = user.five_hundred_px.user_comments_on_blog_post(blog_post_id,
+                                                               comment_body,
+                                                               self.authorized_client)
+        fhp.models.blog_post.BlogPost(blog_post_id).comments.max_length += 1
+        return resp
+    
     @magic_cache
     def _get_collections_(self):
         self.collections = {}
