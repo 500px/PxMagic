@@ -141,6 +141,30 @@ class FiveHundredPx(object):
             if page == data['total_pages']:
                 break
             page += 1
+
+    def get_blog_post_comments(self, blog_post_id, skip=None, rpp=20):
+        if rpp != 20:
+            """ It seems this does not work on the API """
+            raise NotImplementedError
+
+        if skip:
+            page = skip / rpp
+            skip -= page * rpp
+            assert(skip >= 0) 
+        page = 1
+        while True:
+            data = self.request('/blogs/%s/comments' % blog_post_id,
+                                page=page,
+                                rpp=rpp)
+            assert(page == data['current_page'])
+            for comment in data['comments']:
+                if skip:
+                    skip -= 1
+                    continue
+                yield comment
+            if page == data['total_pages']:
+                break
+            page += 1
         
     def get_user_friends(self, user_id, skip=None, rpp=100):
         if skip:
@@ -258,6 +282,14 @@ class FiveHundredPx(object):
 
     def user_comments_on_photo(self, photo_id, comment_body, authorized_client):
         url = FiveHundredPx.BASE_URL + '/photos/%s/comments' % photo_id
+        post_args = dict(body=comment_body)
+        response = authorized_client.post(url, data=post_args)
+        return response.status_code == 200
+
+    def user_comments_on_blog_post(self, blog_post_id,
+                                   comment_body,
+                                   authorized_client):
+        url = FiveHundredPx.BASE_URL + '/blogs/%s/comments' % blog_post_id
         post_args = dict(body=comment_body)
         response = authorized_client.post(url, data=post_args)
         return response.status_code == 200
