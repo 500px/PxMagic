@@ -27,7 +27,7 @@ class photo(magic_object):
             if key == 'user':
                 continue
             if key == 'comments':
-                self.add_comments(photo_data[key])
+                continue
             elif key == 'category':
                 self.add_category_name(photo_data['category'])
             elif key == 'status':
