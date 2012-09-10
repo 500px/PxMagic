@@ -280,6 +280,23 @@ class FiveHundredPx(object):
         response = authorized_client.post(url, data=post_args)
         return response.status_code == 200
 
+    def user_follows_user(self, user_id, authorized_client):
+        """ The user_id is of the user to be followed. The authorized
+        client is of the user doing the following.
+        """
+        url = FiveHundredPx.BASE_URL + '/users/%s/friends' % user_id
+        post_args = ""
+        response = authorized_client.post(url, data=post_args)
+        return response.status_code == 200
+
+    def user_unfollows_user(self, user_id, authorized_client):
+        """ The user_id is of the user to be followed. The authorized
+        client is of the user doing the unfollowing.
+        """
+        url = FiveHundredPx.BASE_URL + '/users/%s/friends' % user_id
+        response = authorized_client.delete(url)
+        return response.status_code == 200
+
     def user_comments_on_photo(self, photo_id, comment_body, authorized_client):
         url = FiveHundredPx.BASE_URL + '/photos/%s/comments' % photo_id
         post_args = dict(body=comment_body)

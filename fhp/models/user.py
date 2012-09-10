@@ -103,7 +103,6 @@ class user(magic_object):
             if is_match:
                 return friend
 
-
     def find_follower(self, **kwargs):
         for follower in self.followers:
             is_match = True
@@ -113,6 +112,50 @@ class user(magic_object):
             if is_match:
                 return follower
             
+    def follow(self, user):
+        """ Warning: if you pass in a user_id instead of a user
+        object then any user object you are currently using 
+        will not be informed of the additional follower.
+
+        This may be especially tricky if the followed user is
+        and authenticated user (which takes up it's own object)
+        """
+        if hasattr(user, "id"):
+            user_id = user.id
+        else:
+            user_id = user
+            user = False
+        result = user.five_hundred_px.user_follows_user(user_id,
+                                                        self.authorized_client)
+        if result:
+            self.friends.max_length += 1
+        if result and user:
+            user.followers.max_length += 1
+        return result 
+
+    def unfollow(self, user):
+        """ Warning: if you pass in a user_id instead of a user
+        object then any user object you are currently using 
+        will not be informed that it has lost a follower.
+
+        This may be especially tricky if the followed user is
+        and authenticated user (which takes up it's own object)
+        """
+        if hasattr(user, "id"):
+            user_id = user.id
+        else:
+            user_id = user
+            user = False
+        result = user.five_hundred_px.user_unfollows_user(user_id,
+                                                          self.authorized_client)
+        # This is necessary since we do not know where in the result
+        # set the user was.
+        if result:
+            self.friends.reset_cache()
+        if result and user:
+            user.followers.reset_cache()
+        return result 
+
     def _get_friends_(self):
         iter_source = partial(user.five_hundred_px.get_user_friends, self.id)
         def build_user(data):

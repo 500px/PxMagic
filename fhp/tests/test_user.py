@@ -170,8 +170,20 @@ bunch of times, I'm testing out the api and there is no delete method in the api
     def test_user_search(self):
         pass
     
-    def test_follow_user(self):
-        pass
+    def test_follow_and_unfollow_user(self):
+        """ Normally these would be two tests but I can't 
+        guarantee execution order.
+        """
+        if self.test_settings['oauth']:
+            zachapitest = User(username="zachapitest")
+            self.assertTrue(self.auth_zach.follow(zachapitest))
+            self.assertTrue(self.auth_zach.find_friend(username="zachapitest"))
+            self.assertTrue(zachapitest.find_follower(username="zachaysan"))
+            self.assertTrue(self.auth_zach.unfollow(zachapitest))
+            no_friend = self.auth_zach.find_friend(username="zachapitest")
+            no_follower = zachapitest.find_follower(username="zachaysan")
+            self.assertTrue(no_friend is None)
+            self.assertTrue(no_follower is None)
 
     def test_unfollow_user(self):
         pass
