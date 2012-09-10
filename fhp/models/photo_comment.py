@@ -33,7 +33,7 @@ class photo_comment(magic_object):
     def __getattr__(self, name):
         if name == 'photo':
             self._get_photo_(self.photo_id)
-            return self.photo_id
+            return self.photo
         if name == 'user':
             self._get_user_(self.user_id)
             return self.user
