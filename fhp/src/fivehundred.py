@@ -47,10 +47,6 @@ class FiveHundredPx(object):
         
         return response
 
-    def search_photos(self, **kwargs):
-        data = self.request('/photos/search', **kwargs)
-        return data
-
     def get_photos(self, **kwargs):
         """ kwargs are the none-post arguments (ie, url arguments)
         that you would like to attach to the get_photos request.
@@ -193,6 +189,27 @@ class FiveHundredPx(object):
                     skip -= 1
                     continue
                 yield photo
+            if page == data['total_pages']:
+                break
+            page += 1
+        
+    def user_search(self, term, skip=None, rpp=100):
+        if skip:
+            page = skip / rpp
+            skip -= page * rpp
+            assert(skip >= 0) 
+        page = 1
+        while True:
+            kwargs = dict(page=page,
+                          rpp=rpp,
+                          term=term)
+            data = self.request('/users/search', **kwargs)
+            assert(page == data['current_page'])
+            for user in data['users']:
+                if skip:
+                    skip -= 1
+                    continue
+                yield user
             if page == data['total_pages']:
                 break
             page += 1
