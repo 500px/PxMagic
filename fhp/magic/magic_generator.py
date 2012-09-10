@@ -38,7 +38,7 @@ class MagicGenerator(object):
     
     def reset_cache(self):
         self.cache = []
-        self.max_length = None
+        self.max_length = float('inf')
         
     def first(self):
         return self[0]
