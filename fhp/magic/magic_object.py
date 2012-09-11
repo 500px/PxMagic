@@ -19,3 +19,13 @@ class magic_object(object):
         cache = cache or getattr(self, cache_name)
         del(cache)
         return True
+    
+    def find_thing(self, things_name, **kwargs):
+        things = getattr(self, things_name)
+        for thing in things:
+            is_match = True
+            for kwarg in kwargs:
+                if not getattr(thing, kwarg) == kwargs[kwarg]:
+                    is_match = False
+            if is_match:
+                return thing
