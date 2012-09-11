@@ -1,6 +1,7 @@
 """
 Created by @arthurnn on 2012-01-19.
 """
+from functools import partial
 
 import urllib
 from fhp.helpers.json_finder import _parse_json
@@ -23,7 +24,6 @@ class FiveHundredPx(object):
         to be implemented.
         """
         log_request = False
-            
         if post_args:
             raise NotImplementedError
         self._set_consumer_key_to_args_(post_args, kwargs)
@@ -31,12 +31,13 @@ class FiveHundredPx(object):
         encoded_kwargs = smart_urlencode(kwargs)
         full_url = FiveHundredPx.BASE_URL + path + "?" + encoded_kwargs
         if log_request:
-            print full_url
             from time import time
             print time()
+            print full_url
         with safe_urlopen(full_url, post_data) as file_resp:
             file_contents = file_resp.read()
             if log_request:
+                from time import time
                 print time()
             response = None
             try:
@@ -44,44 +45,37 @@ class FiveHundredPx(object):
             except:
                 print file_contents
                 print full_url
-        
         return response
-
-    def get_photos(self, **kwargs):
-        """ kwargs are the none-post arguments (ie, url arguments)
-        that you would like to attach to the get_photos request.
-        
-        If there are no arguments, the the default is set to
-        getting the first 100 photos from the editiors list.
-        
-        If there are no limits, it defaults to the API default of
-        a limit of 20 results, which is also the official limit in 
-        the terms of use for number of photos to be displayed at 
-        once, although you can email 500px to get permission to 
-        display more.
-        """
-        kwargs = kwargs or dict(feature='editors')
-        
-        limit = 20 if 'limit' not in kwargs else kwargs['limit']
-        data = self.request('/photos', **kwargs)
-        total_pages = data['total_pages']
-        count = 0
-        
-        page = data['current_page']
-        
-        while page <= total_pages:
-            for p in data['photos']:
-                count = count+1
-                if count > limit: return
-                yield p
-            
-            kwargs['page'] = page = page+1
-            data = self.request('/photos', **kwargs)
             
     def get_photo(self, id, **kwargs):
         data = self.request('/photos/%d' % id, **kwargs)
         return data
 
+    def create_new_photo_upload_key(self, authorized_client, **kwargs):
+        url = FiveHundredPx.BASE_URL + '/photos'
+        url = url + "?" + smart_urlencode(kwargs)
+        data = ""
+        response = authorized_client.post(url, data=data)
+        response_data = _parse_json(response.content)
+        return response_data
+
+    def upload_photo(self, authorized_client, upload_key, photo_id, photo_file):
+        """ This method is only useful for client side applications """
+        files = {'file': photo_file}
+        url = FiveHundredPx.BASE_URL + '/upload'
+        url = url
+        data = dict(upload_key=upload_key,
+                    photo_id=photo_id,
+                    consumer_key=self.consumer_key,
+                    consumer_secret=self.consumer_secret)
+        response = authorized_client.post(url,
+                                          files=files,
+                                          **data)
+        if response.status_code == 200:
+            return True
+        else:
+            print response.content
+    
     def get_blog_post(self, id):
         blog_post = self.request('/blogs/%d' % id)
         return dict(blog_post=blog_post)
@@ -116,154 +110,80 @@ class FiveHundredPx(object):
             data = self.request('/users/show', username=username, **kwargs)
         return data
 
+    def get_photos(self, feature='editors', skip=None, rpp=20, **kwargs):
+        request_function = partial(self.request, '/photos', **kwargs)
+        for photo in self.paginate(skip, rpp, request_function, 'photos'):
+            yield photo
+
     def get_photo_comments(self, photo_id, skip=None, rpp=20):
         if rpp != 20:
             """ It seems this does not work on the API """
             raise NotImplementedError
-        
-        if skip:
-            page = skip / rpp
-            skip -= page * rpp
-            assert(skip >= 0) 
-        page = 1
-        while True:
-            data = self.request('/photos/%s/comments' % photo_id, page=page, rpp=rpp)
-            assert(page == data['current_page'])
-            for comment in data['comments']:
-                if skip:
-                    skip -= 1
-                    continue
-                yield comment
-            if page == data['total_pages']:
-                break
-            page += 1
+        request_function = partial(self.request, '/photos/%s/comments' % photo_id)
+        for photo_comment in self.paginate(skip, rpp, request_function, 'comments'):
+            yield photo_comment
 
     def get_blog_post_comments(self, blog_post_id, skip=None, rpp=20):
         if rpp != 20:
             """ It seems this does not work on the API """
             raise NotImplementedError
-
-        if skip:
-            page = skip / rpp
-            skip -= page * rpp
-            assert(skip >= 0) 
-        page = 1
-        while True:
-            data = self.request('/blogs/%s/comments' % blog_post_id,
-                                page=page,
-                                rpp=rpp)
-            assert(page == data['current_page'])
-            for comment in data['comments']:
-                if skip:
-                    skip -= 1
-                    continue
-                yield comment
-            if page == data['total_pages']:
-                break
-            page += 1
+        request_function = partial(self.request, '/blogs/%s/comments' % blog_post_id)
+        for blog_post_comment in self.paginate(skip, rpp, request_function, 'comments'):
+            yield blog_post_comment
         
     def photo_search(self, term=None, tag=None, tags=None, skip=None, rpp=100):
+        kwargs = {}
+        if not bool(tag) != bool(term):
+            raise TypeError, "one and only one of tag xor term is needed"
+        elif tag:
+            kwargs['tag'] = tag
+        elif term:
+            kwargs['term'] = term
+        if tags:
+            kwargs['tags'] = tags
+        request_function = partial(self.request, '/photos/search', **kwargs)
+        for photo in self.paginate(skip, rpp, request_function, 'photos'):
+            yield photo
+
+    def paginate(self, skip, rpp, request_function, title, total_pages='total_pages'):
+        page = 1
         if skip:
             page = skip / rpp
             skip -= page * rpp
             assert(skip >= 0) 
-        page = 1
         while True:
-            kwargs = dict(page=page,
-                          rpp=rpp)
-
-            if not bool(tag) != bool(term):
-                raise TypeError, "one and only one of tag xor term is needed"
-            elif tag:
-                kwargs['tag'] = tag
-            elif term:
-                kwargs['term'] = term
-                
-            if tags:
-                kwargs['tags'] = tags
-
-            data = self.request('/photos/search', **kwargs)
-            assert(page == data['current_page'])
-            for photo in data['photos']:
+            data = request_function(page=page, rpp=rpp)
+            for thing in data[title]:
                 if skip:
                     skip -= 1
                     continue
-                yield photo
-            if page == data['total_pages']:
+                yield thing
+            if page == data[total_pages]:
                 break
             page += 1
         
     def user_search(self, term, skip=None, rpp=100):
-        if skip:
-            page = skip / rpp
-            skip -= page * rpp
-            assert(skip >= 0) 
-        page = 1
-        while True:
-            kwargs = dict(page=page,
-                          rpp=rpp,
-                          term=term)
-            data = self.request('/users/search', **kwargs)
-            assert(page == data['current_page'])
-            for user in data['users']:
-                if skip:
-                    skip -= 1
-                    continue
-                yield user
-            if page == data['total_pages']:
-                break
-            page += 1
+        request_function = partial(self.request, '/users/search', term=term)
+        for user in self.paginate(skip, rpp, request_function, "users"):
+            yield user
         
     def get_user_friends(self, user_id, skip=None, rpp=100):
-        if skip:
-            page = skip / rpp
-            skip -= page * rpp
-            assert(skip >= 0) 
-        page = 1
-        while True:
-            data = self.request('/users/%s/friends' % user_id, page=page, rpp=rpp)
-            assert(page == data['page'])
-            for friend in data['friends']:
-                if skip:
-                    skip -= 1
-                    continue
-                yield dict(user=friend)
-            if page == data['friends_pages']:
-                break
-            page += 1
+        request_function = partial(self.request, '/users/%s/friends' % user_id)
+        for friend in self.paginate(skip, rpp, request_function, "friends", "friends_pages"):
+            yield friend
 
     def get_user_followers(self, user_id, skip=None, rpp=100):
-        if skip:
-            page = skip / rpp
-            skip -= page * rpp
-            assert(skip >= 0) 
-        page = 1
-        while True:
-            data = self.request('/users/%s/followers' % user_id, page=page, rpp=rpp)
-            assert(page == data['page'])
-            for follower in data['followers']:
-                if skip:
-                    skip -= 1
-                    continue
-                yield dict(user=follower)
-            if page == data['followers_pages']:
-                break
-            page += 1
+        request_function = partial(self.request, '/users/%s/followers' % user_id)
+        for follower in self.paginate(skip, rpp, request_function, "followers", "followers_pages"):
+            yield follower
 
-    def get_user_blog_posts(self, user_id):
-        page = 1
-        while True:
-            data = self.request('/blogs',
-                                feature='user',
-                                user_id=user_id,
-                                page=page,
-                                rpp=99)
-            assert(page == data['current_page'])
-            for blog_post in data['blog_posts']:
-                yield blog_post
-            if page == data['total_pages']:
-                break
-            page += 1
+    def get_user_blog_posts(self, user_id, skip=None, rpp=100):
+        request_function = partial(self.request,
+                                   '/blogs',
+                                   feature='user',
+                                   user_id=user_id)
+        for blog_post in self.paginate(skip, rpp, request_function, "blog_posts"):
+            yield blog_post
             
     def get_user_collections(self, authorized_client=None, user_id=None):
         data = None
