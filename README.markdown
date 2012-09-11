@@ -6,13 +6,19 @@ This a Python version for [500px](http://500px.com/ "500px") API, http://develop
 If you would like to get involved feel free to contact
 @zachaysan or @arthurnn on github or at 500px.com.
 
+Furthermore, the api went down before I could bundle this up
+correctly so you may need to do some guess work.
+
+If you want to follow me tomorrow while I try to fix it
+follow me on twitter (@zachaysan) and look for the hash tag #500germans.
+
 Installation
 ------------
 
 ### To install:
 1.  ```[sudo] python setup.py build ```
 2.  ```[sudo] python setup.py install ```
-3.  ```[sudo] pip install git+git://github.com/simplegeo/python-oauth2.git ``` (oauth users only)
+3.  ```[sudo] pip install requests-oauth ``` (oauth users only)
 
 To try without installing
 -------------------------	

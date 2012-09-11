@@ -22,3 +22,6 @@ run_current.sh
 # Ignore sensitive files
 fhp/config/authentication.json
 fhp/config/authentication.json.preprod
+
+# Ignore test photo
+fhp/tests/test_photo.jpg
