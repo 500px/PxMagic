@@ -294,6 +294,7 @@ class FiveHundredPx(object):
         return resp_data
 
     def sample_auth_url_fn(self, authorization_url):
+        print authorization_url
         from subprocess import call
         call(["google-chrome",authorization_url])
         accepted = 'n'
