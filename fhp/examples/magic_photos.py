@@ -25,7 +25,7 @@ def main(narrations_on=True):
     try:
         owly_photo = Photo(3256058)
         narrate("Looks like that went smoothly")
-    finally:
+    except:
         narrate("Looks like a problem happened, are your auth creds set up?")
 
     narrate("Now, lets check out that photo photo url:")
