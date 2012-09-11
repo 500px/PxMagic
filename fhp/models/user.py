@@ -76,6 +76,9 @@ class user(magic_object):
         elif name == 'blog_posts':
             self._get_blog_posts_()
             return self.blog_posts
+        elif name == 'photos':
+            self._get_photos_()
+            return self.photos
         elif name in dir(self):
             data = self.get_long_public_user_data(self.id,
                                                   self.authorized_client)
@@ -111,7 +114,55 @@ class user(magic_object):
                     is_match = False
             if is_match:
                 return follower
+
+    def find_photo(self, **kwargs):
+        return self.find_thing("photos", **kwargs)
             
+    def add_photo(self, **kwargs):
+        """ The photo upload process is the following:
+        1.  Send the data about the photo
+        2.  Receive the photo_id and the upload key.
+        3A. If a server, send the upload_key to your user and have them 
+            do a multi form upload with the upload key
+        
+        OR
+        
+        3B. If a local app, use the upload_key to do the multi-form upload.
+        
+        Since both uses are acceptable, both the upload key and the new photo
+        object are returned, even if, in most cases only the photo_id (not the 
+        full photo object) is needed until the step 3A is complete.
+        """
+        data = user.five_hundred_px.create_new_photo_upload_key(self.authorized_client,
+                                                                **kwargs)
+        self.photos.max_length += 1
+        photo_id = data["photo"]["id"]
+        photo = fhp.models.photo.Photo(photo_id, data=data)
+        upload_key = data["upload_key"]
+        return upload_key, photo
+
+    def upload_photo(self, upload_key, photo, photo_file):
+        """ If you are writing a server side app, you probably 
+        *don't* need this method. This method is geared towards
+        people making, say, Ubuntu apps.
+
+        Of course if you're server is part of skynet and skynet takes picturs
+        and wants to be part of the worlds best photography site, then
+        this is acceptable to both 500px Inc, and me personally.
+        
+        Just don't steal other peoples photos and upload them as your own.
+        """
+        # Currently does not work
+        raise NotImplementedError
+        if type(file) == str:
+            import warnings
+            warnings.warn("treating string as if it were a file, not filename")
+        photo_id = self._get_photo_id_(photo)
+        return user.five_hundred_px.upload_photo(self.authorized_client,
+                                                 upload_key,
+                                                 photo_id,
+                                                 photo_file)
+
     def follow(self, user):
         """ Warning: if you pass in a user_id instead of a user
         object then any user object you are currently using 
@@ -158,7 +209,8 @@ class user(magic_object):
 
     def _get_friends_(self):
         iter_source = partial(user.five_hundred_px.get_user_friends, self.id)
-        def build_user(data):
+        def build_user(user_data):
+            data = dict(user=user_data)
             user_id = data["user"]['id']
             return User(user_id, data=data)
         self.friends = MagicGenerator(iter_source=iter_source,
@@ -166,11 +218,25 @@ class user(magic_object):
         
     def _get_followers_(self):
         iter_source = partial(user.five_hundred_px.get_user_followers, self.id)
-        def build_user(data):
+        def build_user(user_data):
+            data = dict(user=user_data)
             user_id = data["user"]['id']
             return User(user_id, data=data)
         self.followers = MagicGenerator(iter_source=iter_source,
                                       iter_destination=build_user)
+
+    def _get_photos_(self):
+        kwargs = dict(feature='user',
+                      user_id=self.id,
+                      user=True)
+        iter_source = partial(user.five_hundred_px.get_photos, **kwargs)
+
+        def build_photo(photo_data):
+            data = dict(photo=photo_data)
+            photo_id = data["photo"]["id"]
+            return fhp.models.photo.Photo(photo_id, data=data)
+        self.photos = MagicGenerator(iter_source=iter_source,
+                                     iter_destination=build_photo)
     
     def favorite(self, photo):
         """ Returns True upon successful favoriting """

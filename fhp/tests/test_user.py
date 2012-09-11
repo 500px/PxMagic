@@ -6,7 +6,7 @@ from fhp.models.photo import Photo
 from fhp.models.blog_post import BlogPost
 
 from fhp.helpers.json_finder import _parse_json
-
+from time import time
 class Test_retrieve_user(unittest.TestCase):
     def setUp(self):
         self.zachaysan = User(403022)
@@ -164,12 +164,37 @@ bunch of times, I'm testing out the api and there is no delete method in the api
     def test_asking_for_an_oauth_only_resource_from_a_nonowned_user_id(self):
         pass
 
-    def test_auto_photo_creation(self):
-        pass
+    def test_list_photos_a_user_has_taken(self):
+        paddy = User(username="tapi")
+        self.assertTrue(paddy.photos.first())
+        self.assertEqual(paddy.find_photo(name="Llama!").category_name, "Animals")
 
-    def test_user_search(self):
-        pass
-    
+    def test_user_can_create_new_photo(self):
+        annoying_test = not self.test_settings['ignore_annoying_tests']
+        if self.test_settings['oauth']:
+            photo_details = dict(name="fancy test photo of me flying",
+                                 description="This is a photo that ev took",
+                                 category="7",
+                                 shutter_speed="1/40",
+                                 focal_length="100",
+                                 aperture="f2.4",
+                                 camera="iPhone",
+                                 lens="glass",
+                                 privacy="1")
+            """ Note that test_photo is a photo_object *without* an accompanying 
+            photo, so some functionality may be broken until the photo has been
+            uploaded
+            """
+            upload_key, test_photo = self.auth_zach.add_photo(**photo_details)
+            self.assertTrue(upload_key and test_photo)
+            # Note, you will not normally need to do this part unless
+            # you are building a local client or something
+            photo_file = open("fhp/tests/test_photo.jpg", "rb")
+            successful_response = self.auth_zach.upload_photo(upload_key,
+                                                              test_photo,
+                                                              photo_file)
+            self.assertTrue(successful_response)
+            
     def test_follow_and_unfollow_user(self):
         """ Normally these would be two tests but I can't 
         guarantee execution order.
@@ -185,8 +210,6 @@ bunch of times, I'm testing out the api and there is no delete method in the api
             self.assertTrue(no_friend is None)
             self.assertTrue(no_follower is None)
 
-    def test_unfollow_user(self):
-        pass
-
     def test_super_amounts_of_magic_in_user_dont_interfere_with_force_fn_call(self):
         pass
+
