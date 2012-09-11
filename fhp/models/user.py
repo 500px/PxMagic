@@ -152,6 +152,8 @@ class user(magic_object):
         
         Just don't steal other peoples photos and upload them as your own.
         """
+        # Currently does not work
+        raise NotImplementedError
         if type(file) == str:
             import warnings
             warnings.warn("treating string as if it were a file, not filename")
