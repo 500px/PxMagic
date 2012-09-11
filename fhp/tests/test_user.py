@@ -166,12 +166,12 @@ bunch of times, I'm testing out the api and there is no delete method in the api
 
     def test_list_photos_a_user_has_taken(self):
         paddy = User(username="tapi")
-        self.assertTrue(paddy.photos)
+        self.assertTrue(paddy.photos.first())
         self.assertEqual(paddy.find_photo(name="Llama!").category_name, "Animals")
 
     def test_user_can_create_new_photo(self):
         annoying_test = not self.test_settings['ignore_annoying_tests']
-        if self.test_settings['oauth'] and annoying_test:
+        if self.test_settings['oauth']:
             photo_details = dict(name="fancy test photo of me flying",
                                  description="This is a photo that ev took",
                                  category="7",

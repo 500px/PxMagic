@@ -23,7 +23,7 @@ class FiveHundredPx(object):
         """Handles the actual request to 500px. Posting has yet 
         to be implemented.
         """
-        log_request = False
+        log_request = True
         if post_args:
             raise NotImplementedError
         self._set_consumer_key_to_args_(post_args, kwargs)
@@ -39,6 +39,7 @@ class FiveHundredPx(object):
             if log_request:
                 from time import time
                 print time()
+                print file_contents[:40]
             response = None
             try:
                 response = _parse_json(file_contents)
@@ -70,7 +71,7 @@ class FiveHundredPx(object):
                     consumer_secret=self.consumer_secret)
         response = authorized_client.post(url,
                                           files=files,
-                                          **data)
+                                          data=data)
         if response.status_code == 200:
             return True
         else:
@@ -110,7 +111,7 @@ class FiveHundredPx(object):
             data = self.request('/users/show', username=username, **kwargs)
         return data
 
-    def get_photos(self, feature='editors', skip=None, rpp=20, **kwargs):
+    def get_photos(self, skip=None, rpp=20, **kwargs):
         request_function = partial(self.request, '/photos', **kwargs)
         for photo in self.paginate(skip, rpp, request_function, 'photos'):
             yield photo
@@ -150,6 +151,7 @@ class FiveHundredPx(object):
         if skip:
             page = skip / rpp
             skip -= page * rpp
+            page += 1
             assert(skip >= 0) 
         while True:
             data = request_function(page=page, rpp=rpp)
