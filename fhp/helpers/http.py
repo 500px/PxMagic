@@ -69,5 +69,4 @@ def build_oauth_client(url,
                            header_auth=True)
     
     client = requests.session(hooks={'pre_request': oauth_hook})
-    print client.__dict__
     return client
