@@ -23,7 +23,7 @@ class FiveHundredPx(object):
         """Handles the actual request to 500px. Posting has yet 
         to be implemented.
         """
-        log_request = True
+        log_request = False
         if post_args:
             raise NotImplementedError
         self._set_consumer_key_to_args_(post_args, kwargs)
