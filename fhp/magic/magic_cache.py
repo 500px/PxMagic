@@ -59,7 +59,6 @@ class MagicFunctionCache(object):
             if function not in self.caches:
                 self.caches[function] = Caches()
             if force_fn_call:
-                del(kwargs['force_fn_call'])
                 result = self.get_and_set_cache(function,
                                                 *args,
                                                 **kwargs)

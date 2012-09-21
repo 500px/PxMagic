@@ -6,6 +6,8 @@ from fhp.models.photo import Photo
 from fhp.models.blog_post import BlogPost
 
 from fhp.helpers.json_finder import _parse_json
+from fhp.helpers.http import retrieve_oauth_verifier
+
 from time import time
 class Test_retrieve_user(unittest.TestCase):
     def setUp(self):
@@ -39,11 +41,27 @@ class Test_retrieve_user(unittest.TestCase):
     def test_auth_without_oauth(self):
         self.assertFalse(hasattr(self.zachaysan, 'auth'))
         
-    def test_oauth_with_auth(self):
+    def test_oauth_with_oauth(self):
         if self.test_settings['oauth']:
             api_test_user = self.auth_zach
             self.assertTrue(hasattr(api_test_user, 'auth'))
-            
+    
+    def test_two_stage_oauth(self):
+        if self.test_settings['oauth']:
+            zachaysan = User(403022, force_fn_call=True)
+            verify_url = zachaysan.five_hundred_px.verify_url
+            zachaysan.initialize_authorization()
+            # Normally, at this point, you would break this into 
+            # the section of code that the user would hit on your site
+            # *after* they finished authorizing (so the webserver would 
+            # pick it up there) but since I don't want to run the tests
+            # as a web server + client, I'm re-creating the lightweight 
+            # verifier app.
+            oauth_token = zachaysan._oauth_token
+            oauth_verifier = retrieve_oauth_verifier(oauth_token, verify_url)
+            zachaysan.complete_authorization(oauth_verifier)
+            self.assertTrue(zachaysan.auth)
+
     def test_friends(self):
         evgenys_id = 1
         evgenys_username = 'tchebotarev'
@@ -213,3 +231,5 @@ bunch of times, I'm testing out the api and there is no delete method in the api
     def test_super_amounts_of_magic_in_user_dont_interfere_with_force_fn_call(self):
         pass
 
+    def test_that_non_sample_auth_fns_can_be_used_with_the_auth_client(self):
+        pass

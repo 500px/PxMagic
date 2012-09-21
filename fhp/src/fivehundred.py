@@ -5,12 +5,14 @@ from functools import partial
 
 import urllib
 from fhp.helpers.json_finder import _parse_json
-from fhp.helpers.http import safe_urlopen, smart_urlencode, build_oauth_client
+from fhp.helpers.http import safe_urlopen, smart_urlencode, finalize_oauth_client
+from fhp.helpers.http import build_oauth_client_for_client, use_auth_url_fn
+from fhp.helpers.http import multipart_post
 from pprint import pprint
 class FiveHundredPx(object):
     BASE_URL = 'https://api.500px.com/v1'
     
-    def __init__(self, consumer_key, consumer_secret):
+    def __init__(self, consumer_key, consumer_secret, verify_url=None):
         """For more info on the API visit developer.500px.com.
         If you are logged in to your 500px account you can 
         go to: http://500px.com/settings/applications to retrieve
@@ -18,6 +20,13 @@ class FiveHundredPx(object):
         """
         self.consumer_key = consumer_key
         self.consumer_secret = consumer_secret
+        
+        """ Verify URL is used for clients that want oauth'd access
+        without a full fledged server. If you are building a webapp
+        don't worry about this. If you are building a client that doesn't 
+        need oauth, don't worry about this.
+        """
+        self.verify_url = verify_url
 
     def request(self, path, post_args=None, **kwargs):
         """Handles the actual request to 500px. Posting has yet 
@@ -60,18 +69,17 @@ class FiveHundredPx(object):
         response_data = _parse_json(response.content)
         return response_data
 
-    def upload_photo(self, authorized_client, upload_key, photo_id, photo_file):
+    def upload_photo(self, upload_key, photo_id, photo_file, authorized_client):
         """ This method is only useful for client side applications """
         files = {'file': photo_file}
         url = FiveHundredPx.BASE_URL + '/upload'
-        url = url
-        data = dict(upload_key=upload_key,
-                    photo_id=photo_id,
-                    consumer_key=self.consumer_key,
-                    consumer_secret=self.consumer_secret)
-        response = authorized_client.post(url,
-                                          files=files,
-                                          data=data)
+        access_key = authorized_client.access_token
+        kwargs = dict(upload_key=upload_key,
+                      photo_id=photo_id,
+                      consumer_key=self.consumer_key,
+                      access_key=access_key)
+        url = url + "?" + smart_urlencode(kwargs)
+        response = multipart_post(url, files=files)
         if response.status_code == 200:
             return True
         else:
@@ -296,30 +304,61 @@ class FiveHundredPx(object):
         return resp_data
 
     def sample_auth_url_fn(self, authorization_url):
-        print authorization_url
         from subprocess import call
         call(["google-chrome",authorization_url])
         accepted = 'n'
         while accepted.lower() == 'n':
             accepted = raw_input('Have you authorized me? (y/n) ')
 
-    def get_authorized_client(self, 
+    def get_authorized_client(self,
                               auth_url_fn=None,
+                              oauth_token=None,
+                              oauth_secret=None,
+                              oauth_verifier=None,
                               **kwargs):
-        if not auth_url_fn:
-            auth_url_fn = self.sample_auth_url_fn
+        oauth_terms = [oauth_token, oauth_secret, oauth_verifier]
+        if any(oauth_terms) != all(oauth_terms):
+            raise TypeError, "all or none of oauth_terms must be supplied"
             
         request_url = FiveHundredPx.BASE_URL + "/oauth/request_token"
         authorize_url = FiveHundredPx.BASE_URL + "/oauth/authorize"
         access_token_url = FiveHundredPx.BASE_URL + "/oauth/access_token"
-        
-        return build_oauth_client(request_url,
-                                  authorize_url,
-                                  access_token_url,
-                                  self.consumer_key,
-                                  self.consumer_secret,
-                                  auth_url_fn)    
-        
+
+        client = None
+        if all(oauth_terms):
+            client = finalize_oauth_client(oauth_token,
+                                           oauth_secret,
+                                           oauth_verifier,
+                                           self.consumer_key,
+                                           self.consumer_secret,
+                                           access_token_url)
+        if not auth_url_fn:
+            auth_url_fn = self.sample_auth_url_fn
+            
+        if client:
+            return client
+        return build_oauth_client_for_client(request_url=request_url,
+                                             authorize_url=authorize_url,
+                                             access_token_url=access_token_url,
+                                             consumer_key=self.consumer_key,
+                                             consumer_secret=self.consumer_secret,
+                                             auth_url_fn=auth_url_fn,
+                                             verify_url=self.verify_url)
+    
+    def get_oauth_token_and_secret(self, auth_url_fn=None):
+        request_url = FiveHundredPx.BASE_URL + "/oauth/request_token"
+        authorize_url = FiveHundredPx.BASE_URL + "/oauth/authorize"
+        access_token_url = FiveHundredPx.BASE_URL + "/oauth/access_token"
+        auth_url_fn = auth_url_fn or self.sample_auth_url_fn
+        result = use_auth_url_fn(request_url=request_url,
+                                 authorize_url=authorize_url,
+                                 access_token_url=access_token_url,
+                                 consumer_key=self.consumer_key,
+                                 consumer_secret=self.consumer_secret,
+                                 auth_url_fn=auth_url_fn)
+        oauth_token, oauth_secret = result
+        return oauth_token, oauth_secret
+
     def _set_consumer_key_to_args_(self, post_args, kwargs):
         if post_args is not None:
             post_args["consumer_key"] = self.consumer_key
