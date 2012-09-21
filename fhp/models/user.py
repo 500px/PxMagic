@@ -32,10 +32,10 @@ def User(id=None, username=None, email=None, data=None, *args, **kwargs):
     return u
 User.username_cache = {}
 
-
 class user(magic_object):
     five_hundred_px = fivehundred.FiveHundredPx(authentication.get_consumer_key(),
-                                                authentication.get_consumer_secret())
+                                                authentication.get_consumer_secret(),
+                                                authentication.get_verify_url())
 
     def __init__(self,
                  id=None,
@@ -52,16 +52,35 @@ class user(magic_object):
         self.authorized_client = None
         if authorize:
             self.authorize()
-        data = data or self.get_long_public_user_data(id, username)
+        data = data or self.get_long_user_data(id, username)
         user_data = data["user"]
         self.add_user_data(user_data)
+        self._setup_dir_()
 
     def add_user_data(self, user_data):
         for key in user_data:
             setattr(self, key, user_data[key])
 
     def authorize(self):
+        """ Intended for client python applications (for example, an Ubuntu app).
+        See self.authorize_step_one() to create an authorized server.
+        """
         self.authorized_client = user.five_hundred_px.get_authorized_client()
+            
+    def initialize_authorization(self):
+        self._oauth_token, self._oauth_secret = user.five_hundred_px.get_oauth_token_and_secret()
+
+    def complete_authorization(self, oauth_verifier, oauth_url_fn=None):
+        client = user.five_hundred_px.get_authorized_client(oauth_url_fn,
+                                                            self._oauth_token,
+                                                            self._oauth_secret,
+                                                            oauth_verifier)
+        self.authorized_client = client
+        # since we are authorized, the id will basically be ignored
+        # this is a hack for now
+        data = self.get_long_user_data(id=self.id)
+        user_data = data["user"]
+        self.add_user_data(user_data)
 
     def __getattr__(self, name):
         if name == 'friends':
@@ -80,15 +99,15 @@ class user(magic_object):
             self._get_photos_()
             return self.photos
         elif name in dir(self):
-            data = self.get_long_public_user_data(self.id,
-                                                  self.authorized_client)
+            data = self.get_long_user_data(self.id,
+                                           self.authorized_client)
             new_user_data = data["user"]
             self.add_user_data(new_user_data)
             return getattr(self, name)
         else:
             raise AttributeError, name
 
-    def get_long_public_user_data(self, id=None, username=None):
+    def get_long_user_data(self, id=None, username=None):
         if id:
             result = user.five_hundred_px.get_user_by_id(id, self.authorized_client)
         elif username:
@@ -152,16 +171,14 @@ class user(magic_object):
         
         Just don't steal other peoples photos and upload them as your own.
         """
-        # Currently does not work
-        raise NotImplementedError
         if type(file) == str:
             import warnings
             warnings.warn("treating string as if it were a file, not filename")
         photo_id = self._get_photo_id_(photo)
-        return user.five_hundred_px.upload_photo(self.authorized_client,
-                                                 upload_key,
+        return user.five_hundred_px.upload_photo(upload_key,
                                                  photo_id,
-                                                 photo_file)
+                                                 photo_file,
+                                                 self.authorized_client)
 
     def follow(self, user):
         """ Warning: if you pass in a user_id instead of a user
@@ -307,32 +324,35 @@ class user(magic_object):
                                                                       data=data,
                                                                       user=self)
 
+    def _setup_dir_(self):
+        base_dir_list = ['domain',
+                         'locale',
+                         'store_on',
+                         'sex',
+                         'id',
+                         'city',
+                         'userpic_url',
+                         'photos_count',
+                         'friends_count',
+                         'contacts',
+                         'followers_count',
+                         'equipment',
+                         'state',
+                         'upgrade_status',
+                         'show_nude',
+                         'username',
+                         'firstname',
+                         'lastname',
+                         'registration_date',
+                         'birthday',
+                         'in_favorites_count',
+                         'about',
+                         'country',
+                         'fotomoto_on',
+                         'fullname',
+                         'affection',
+                         'blog_posts']
+        self.dir_list = list(set(base_dir_list))
+
     def __dir__(self):
-        results = ['domain',
-                   'locale',
-                   'store_on',
-                   'sex',
-                   'id',
-                   'city',
-                   'userpic_url',
-                   'photos_count',
-                   'friends_count',
-                   'contacts',
-                   'followers_count',
-                   'equipment',
-                   'state',
-                   'upgrade_status',
-                   'show_nude',
-                   'username',
-                   'firstname',
-                   'lastname',
-                   'registration_date',
-                   'birthday',
-                   'in_favorites_count',
-                   'about',
-                   'country',
-                   'fotomoto_on',
-                   'fullname',
-                   'affection',
-                   'blog_posts']
-        return results
+        return self.dir_list
