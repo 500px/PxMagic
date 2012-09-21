@@ -1,0 +1,5 @@
+include MANIFEST.in
+include README.markdown
+include fhp/config
+include fhp/config/authentication.json.example
+include fhp/config/test_settings.json
