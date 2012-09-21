@@ -6,7 +6,7 @@ from setuptools import find_packages
 
 setup(
     name='fhp',
-    version='0.1.5',
+    version='0.2.0',
     description='This is a wrapper for the 500px api.',
     author='500px',
     author_email='help@500px.com',
