@@ -1,4 +1,4 @@
-from fhp.helpers.json_finder import _parse_json
+from fhp.helpers.json_finder import _parse_json, _dump_json
 import os
 
 def get_consumer_key():
@@ -8,7 +8,7 @@ def get_consumer_key():
     your key.
     """
     
-    with open(os.path.join('fhp','config','authentication.json')) as f:
+    with open_or_ask(os.path.join('fhp','config','authentication.json')) as f:
         auth = _parse_json(f.read())
         return auth["authentication"]["consumer_key"]
 
@@ -18,13 +18,46 @@ def get_consumer_secret():
     go to: http://500px.com/settings/applications to retrieve
     your key.
     """
-    with open(os.path.join('fhp','config','authentication.json')) as f:
+    with open_or_ask(os.path.join('fhp','config','authentication.json')) as f:
         auth = _parse_json(f.read())
         return auth["authentication"]["consumer_secret"]
 
 def get_verify_url():
     """ Used for non-server applications """
-    with open(os.path.join('fhp','config','authentication.json')) as f:
+    with open_or_ask(os.path.join('fhp','config','authentication.json')) as f:
         auth = _parse_json(f.read())
         if "verify_url" in auth["authentication"]:
             return auth["authentication"]["verify_url"]
+
+class open_or_ask(object):
+    def __init__(self, *args, **kwargs):
+        args = list(args)
+        filename = args[0]
+        try:
+            self.f = open(*args, **kwargs)
+        except IOError:
+            try:
+                self.f.close()
+            except:
+                pass
+            args[0] += '.example'
+            f = open(*args, **kwargs)
+            file_text = f.read()
+            example = _parse_json(file_text)
+            real = {}
+            print "building authentication"
+            for key in example:
+                real[key] = {}
+                for k in example[key]:
+                    value = raw_input("What is your %s %s?\n" % (key, k))
+                    real[key][k] = value
+            with open(filename, 'w') as new_file:
+                file_text = _dump_json(real)
+                new_file.write(file_text)
+            self.f = open(*args, **kwargs)
+            
+    def __enter__(self):
+        return self.f
+    
+    def __exit__(self, type, value, traceback):
+        self.f.close()
