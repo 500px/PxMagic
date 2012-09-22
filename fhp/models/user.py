@@ -98,6 +98,9 @@ class user(magic_object):
         elif name == 'photos':
             self._get_photos_()
             return self.photos
+        elif name == 'favorites':
+            self._get_favorites_()
+            return self.favorites
         elif name in dir(self):
             data = self.get_long_user_data(self.id,
                                            self.authorized_client)
@@ -207,7 +210,7 @@ class user(magic_object):
         will not be informed that it has lost a follower.
 
         This may be especially tricky if the followed user is
-        and authenticated user (which takes up it's own object)
+        an authenticated user (which takes up it's own object)
         """
         if hasattr(user, "id"):
             user_id = user.id
@@ -255,6 +258,19 @@ class user(magic_object):
         self.photos = MagicGenerator(iter_source=iter_source,
                                      iter_destination=build_photo)
     
+    def _get_favorites_(self):
+        kwargs = dict(feature='user_favorites',
+                      user_id=self.id,
+                      user=True)
+        iter_source = partial(user.five_hundred_px.get_photos, **kwargs)
+
+        def build_photo(photo_data):
+            data = dict(photo=photo_data)
+            photo_id = data["photo"]["id"]
+            return fhp.models.photo.Photo(photo_id, data=data)
+        self.favorites = MagicGenerator(iter_source=iter_source,
+                                        iter_destination=build_photo)
+
     def favorite(self, photo):
         """ Returns True upon successful favoriting """
         photo_id = self._get_photo_id_(photo)

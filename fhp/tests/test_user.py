@@ -141,7 +141,7 @@ class Test_retrieve_user(unittest.TestCase):
             self.assertTrue(hasattr(zachaysan, 'collections'))
             self.assertIn(383355, zachaysan.collections)
             
-    def test_user_favorites(self):
+    def test_user_favorite(self):
         """ Normally I would split these into their own tests, but 
         they need to proceed sequentially or I may get an error due
         to trying to "unfavorite" a photo I've already unfavorited.
@@ -153,6 +153,11 @@ class Test_retrieve_user(unittest.TestCase):
             photo = Photo(photo_id)
             self.assertTrue(self.auth_zach.favorite(photo))
             self.assertTrue(self.auth_zach.unfavorite(photo))
+
+    def test_user_favorites(self):
+        liberty_photo_id = 5431246
+        favorites = (photo.id for photo in self.zachaysan.favorites)
+        self.assertIn(liberty_photo_id, favorites)
 
     def test_user_likes(self):
         """ Since there is no way to unlike something with the 
