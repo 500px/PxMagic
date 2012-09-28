@@ -1,71 +1,106 @@
 from fhp.helpers.json_finder import _parse_json, _dump_json
 import os
 
+auth_file_locations = [
+        os.path.join(os.path.curdir, 'config', 'authentication.json'),
+        os.path.join(os.path.dirname(__file__), '..', 'config', 'authentication.json'),
+        os.path.join(os.path.curdir, 'authentication.json')]
+
+def first_that_exists(file_list):
+    for f in file_list:
+        try:
+            if os.path.exists(f) and os.path.isfile(f)
+                fd = open(f):
+                return fd
+        except:
+            pass
+    return None
+
+def authentication_credentials(object):
+    instance = None
+    def __init__(self, consumer_key=None, consumer_secret=None, f=None):
+        """ Determines the credientials as used, either a consumer_key and consumer_secret, OR a
+            file f used as json store for the credentials"""
+
+        if consumer_key is None and consumer_secret is None and f is None:
+            print "authentication credentials has all default arguments, attempting to find authentication"
+            parse(first_that_exists(auth_file_locations))
+        else if f is not None:
+            parse(f)
+        else:
+            self.consumer_key = consumer_key
+            self.consumer_secret = consumer_secret
+
+        #  default to override instance if it is not set
+        if instance is None:
+            instance = self
+
+    @classmethod
+    def from(cls, f):
+        new_instance = __init__(f=f)
+        if new_instance is not None:
+            instance = new_instance
+        return new_instance
+
+    @classmethod
+    def get_instance(cls):
+        if instance is None:
+            instance = cls.__init__()
+        return instance
+
+    def parse(self, f):
+        with open(f) as f:
+            auth_json = _parse_json(f.read())
+            try:
+                # copy authentication onto this object
+                for key in auth_json["authentication"]
+                    try:
+                        setattr(self, key, auth_json["authentication"][key])
+                    except KeyError:
+                        pass
+            except:
+                pass  # no authentication in given file config
+
+    @classmethod
+    def create_credentials(cls):
+        print """Configuration file does not exist or does not contain credential, attempting to create in %s""" % auth_file_locations[0]
+        new_json = {}
+        # grab the current configuration of it exists, and copy it
+        with open(auth_file_locations[0]) as fd:
+            previous_json = _parse_json(fd.read())
+            if previous_json is not None:
+                new_json = previous_json
+        # ask for authentication credentials
+        # DEFER: handle partials (already have verify_url, etc...)
+        if "authentication" not in new_json.keys():
+            new_json["authentication"] = {}
+        for k in ['consumer_key', 'consumer_secret', 'verify_url']
+            new_json["authentication"][k] = raw_input("What is your authentication %s\n" % (k))
+        with open(auth_file_locations[0], 'w') as fd:
+            fd.write(_dump_json(new_json))
+
+    def dump_to_file(self):
+
 def root_dir():
     return os.path.join(os.path.dirname(__file__), "..")
 
 def get_consumer_key():
     """ For more info on the API visit developer.500px.com.
-    If you are logged in to your 500px account you can 
+    If you are logged in to your 500px account you can
     go to: http://500px.com/settings/applications to retrieve
     your key.
     """
-    with open_or_ask(os.path.join(root_dir(),'config','authentication.json')) as f:
-        auth = _parse_json(f.read())
-        return auth["authentication"]["consumer_key"]
+    return authentication_credentials.get_instance().consumer_key
 
 def get_consumer_secret():
     """ For more info on the API visit developer.500px.com.
-    If you are logged in to your 500px account you can 
+    If you are logged in to your 500px account you can
     go to: http://500px.com/settings/applications to retrieve
     your key.
     """
-    with open_or_ask(os.path.join(root_dir(),'config','authentication.json')) as f:
-        auth = _parse_json(f.read())
-        return auth["authentication"]["consumer_secret"]
+    return authentication_credentials.get_instance().consumer_secret
 
 def get_verify_url():
     """ Used for non-server applications """
-    with open_or_ask(os.path.join(root_dir(),'config','authentication.json')) as f:
-        auth = _parse_json(f.read())
-        if "verify_url" in auth["authentication"]:
-            return auth["authentication"]["verify_url"]
+    return authentication_credentials.get_instance().verify_url
 
-class open_or_ask(object):
-    warning = False
-    def __init__(self, *args, **kwargs):
-        args = list(args)
-        filename = args[0]
-        try:
-            self.f = open(*args, **kwargs)
-        except IOError:
-            if not open_or_ask.warning:
-                open_or_ask.warning = True
-                print "Configuration file does not exist, you probably need to"
-                print "use sudo to properly save this file. This should only"
-                print "happen once."
-            try:
-                self.f.close()
-            except:
-                pass
-            args[0] += '.example'
-            f = open(*args, **kwargs)
-            file_text = f.read()
-            example = _parse_json(file_text)
-            real = {}
-            print "building authentication"
-            for key in example:
-                real[key] = {}
-                for k in example[key]:
-                    value = raw_input("What is your %s %s?\n" % (key, k))
-                    real[key][k] = value
-            with open(filename, 'w') as new_file:
-                file_text = _dump_json(real)
-                new_file.write(file_text)
-            self.f = open(*args, **kwargs)
-            
-    def __enter__(self):
-        return self.f
-    
-    def __exit__(self, type, value, traceback):
-        self.f.close()

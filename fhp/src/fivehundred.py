@@ -11,25 +11,25 @@ from fhp.helpers.http import multipart_post
 from pprint import pprint
 class FiveHundredPx(object):
     BASE_URL = 'https://api.500px.com/v1'
-    
+
     def __init__(self, consumer_key, consumer_secret, verify_url=None):
         """For more info on the API visit developer.500px.com.
-        If you are logged in to your 500px account you can 
+        If you are logged in to your 500px account you can
         go to: http://500px.com/settings/applications to retrieve
         your key.
         """
         self.consumer_key = consumer_key
         self.consumer_secret = consumer_secret
-        
+
         """ Verify URL is used for clients that want oauth'd access
         without a full fledged server. If you are building a webapp
-        don't worry about this. If you are building a client that doesn't 
+        don't worry about this. If you are building a client that doesn't
         need oauth, don't worry about this.
         """
         self.verify_url = verify_url
 
     def request(self, path, post_args=None, **kwargs):
-        """Handles the actual request to 500px. Posting has yet 
+        """Handles the actual request to 500px. Posting has yet
         to be implemented.
         """
         log_request = False
@@ -56,7 +56,7 @@ class FiveHundredPx(object):
                 print file_contents
                 print full_url
         return response
-            
+
     def get_photo(self, id, **kwargs):
         data = self.request('/photos/%d' % id, **kwargs)
         return data
@@ -84,7 +84,7 @@ class FiveHundredPx(object):
             return True
         else:
             print response.content
-    
+
     def get_blog_post(self, id):
         blog_post = self.request('/blogs/%d' % id)
         return dict(blog_post=blog_post)
@@ -95,8 +95,8 @@ class FiveHundredPx(object):
         if 'email' in kwargs:
             raise TypeError, "get_user_by_id cannot handle a email param"
         if authorized_client:
-            # This may be done incorrectly. Authorized clients both let you 
-            # do requests as well as pull down user information for the 
+            # This may be done incorrectly. Authorized clients both let you
+            # do requests as well as pull down user information for the
             # authorized user. Right now this basically throws out the user_id.
             url = FiveHundredPx.BASE_URL + '/users'
             data = self.use_authorized_client(authorized_client, url, **kwargs)
@@ -110,8 +110,8 @@ class FiveHundredPx(object):
         if 'email' in kwargs:
             raise TypeError, "get_user_by_id cannot handle a email param"
         if authorized_client:
-            # This may be done incorrectly. Authorized clients both let you 
-            # do requests as well as pull down user information for the 
+            # This may be done incorrectly. Authorized clients both let you
+            # do requests as well as pull down user information for the
             # authorized user. Right now this basically throws out the username.
             url = FiveHundredPx.BASE_URL + '/users'
             data = self.use_authorized_client(authorized_client, url, **kwargs)
@@ -139,7 +139,7 @@ class FiveHundredPx(object):
         request_function = partial(self.request, '/blogs/%s/comments' % blog_post_id)
         for blog_post_comment in self.paginate(skip, rpp, request_function, 'comments'):
             yield blog_post_comment
-        
+
     def photo_search(self, term=None, tag=None, tags=None, skip=None, rpp=100):
         kwargs = {}
         if not bool(tag) != bool(term):
@@ -160,7 +160,7 @@ class FiveHundredPx(object):
             page = skip / rpp
             skip -= page * rpp
             page += 1
-            assert(skip >= 0) 
+            assert(skip >= 0)
         while True:
             data = request_function(page=page, rpp=rpp)
             for thing in data[title]:
@@ -171,12 +171,12 @@ class FiveHundredPx(object):
             if page == data[total_pages]:
                 break
             page += 1
-        
+
     def user_search(self, term, skip=None, rpp=100):
         request_function = partial(self.request, '/users/search', term=term)
         for user in self.paginate(skip, rpp, request_function, "users"):
             yield user
-        
+
     def get_user_friends(self, user_id, skip=None, rpp=100):
         request_function = partial(self.request, '/users/%s/friends' % user_id)
         for friend in self.paginate(skip, rpp, request_function, "friends", "friends_pages"):
@@ -194,22 +194,22 @@ class FiveHundredPx(object):
                                    user_id=user_id)
         for blog_post in self.paginate(skip, rpp, request_function, "blog_posts"):
             yield blog_post
-            
+
     def get_user_collections(self, authorized_client=None, user_id=None):
         data = None
         if user_id and not authorized_client:
-            # User Collections have not been implemented for public 
+            # User Collections have not been implemented for public
             # queries to the API
             raise NotImplementedError
         elif user_id and authorized_client:
             # this should be handled by check to see if the user
             # id is the same as the owner of the authorized client
-            # if it is, it should go through fine, otherwise it 
+            # if it is, it should go through fine, otherwise it
             # is not currently supported by the api
             raise NotImplementedError
         elif not authorized_client:
             assert(user_id)
-            # this default case is interesting because it could be 
+            # this default case is interesting because it could be
             # used to pull down all public collections. Hard to tell,
             # requires thought and possible api build out
             raise NotImplementedError
@@ -220,7 +220,7 @@ class FiveHundredPx(object):
         else:
             # this is an undefined state that should never be entered.
             # but since this portion of code needs to expansion, it needs
-            # to be resistant against someone altering it in such a way 
+            # to be resistant against someone altering it in such a way
             # that lets a case though.
             assert(False)
         return data["collections"]
@@ -319,7 +319,7 @@ class FiveHundredPx(object):
         oauth_terms = [oauth_token, oauth_secret, oauth_verifier]
         if any(oauth_terms) != all(oauth_terms):
             raise TypeError, "all or none of oauth_terms must be supplied"
-            
+
         request_url = FiveHundredPx.BASE_URL + "/oauth/request_token"
         authorize_url = FiveHundredPx.BASE_URL + "/oauth/authorize"
         access_token_url = FiveHundredPx.BASE_URL + "/oauth/access_token"
@@ -334,7 +334,7 @@ class FiveHundredPx(object):
                                            access_token_url)
         if not auth_url_fn:
             auth_url_fn = self.sample_auth_url_fn
-            
+
         if client:
             return client
         return build_oauth_client_for_client(request_url=request_url,
@@ -344,7 +344,7 @@ class FiveHundredPx(object):
                                              consumer_secret=self.consumer_secret,
                                              auth_url_fn=auth_url_fn,
                                              verify_url=self.verify_url)
-    
+
     def get_oauth_token_and_secret(self, auth_url_fn=None):
         request_url = FiveHundredPx.BASE_URL + "/oauth/request_token"
         authorize_url = FiveHundredPx.BASE_URL + "/oauth/authorize"
