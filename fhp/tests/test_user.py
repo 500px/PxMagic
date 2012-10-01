@@ -8,7 +8,6 @@ from fhp.models.blog_post import BlogPost
 from fhp.helpers.json_finder import _parse_json
 from fhp.helpers.http import retrieve_oauth_verifier
 
-from time import time
 class Test_retrieve_user(unittest.TestCase):
     def setUp(self):
         self.zachaysan = User(403022)
