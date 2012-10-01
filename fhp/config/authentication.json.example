@@ -1,4 +1,0 @@
-{"authentication":
- {"consumer_key":"__your_consumer_key__",
-  "consumer_secret":"__your_consumer_secret__",
-  "verify_url":"__used_for_client_apps_totally_optional__"}}

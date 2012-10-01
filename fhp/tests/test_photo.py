@@ -1,9 +1,11 @@
 import unittest
 from fhp.models.photo import Photo
+from fhp.tests.settings import test_settings
 
 class Test_retrieve_photo(unittest.TestCase):
     def setUp(self):
         self.owly_photo = Photo(3256058)
+        self.test_settings = test_settings
 
     def test_init(self):
         self.assertEqual(self.owly_photo.id, 3256058)

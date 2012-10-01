@@ -3,6 +3,7 @@ import os
 from fhp.models.collection import Collection
 from fhp.models.user import User
 from fhp.helpers.json_finder import _parse_json
+from fhp.tests.settings import test_settings
 
 class Test_retrieve_collection(unittest.TestCase):
     """ This tests the collection class.
@@ -14,8 +15,7 @@ class Test_retrieve_collection(unittest.TestCase):
     """
     
     def setUp(self):
-        with open(os.path.join('fhp', 'config', 'test_settings.json')) as f:
-            self.test_settings = _parse_json(f.read())
+        self.test_settings = test_settings
 
         authorized_client = None
         if self.test_settings['oauth']:

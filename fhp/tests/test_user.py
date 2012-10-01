@@ -4,15 +4,14 @@ import os
 from fhp.models.user import User
 from fhp.models.photo import Photo
 from fhp.models.blog_post import BlogPost
-
 from fhp.helpers.json_finder import _parse_json
 from fhp.helpers.http import retrieve_oauth_verifier
+from fhp.tests.settings import test_settings
 
 class Test_retrieve_user(unittest.TestCase):
     def setUp(self):
         self.zachaysan = User(403022)
-        with open(os.path.join('fhp', 'config', 'test_settings.json')) as f:
-            self.test_settings = _parse_json(f.read())
+        self.test_settings = test_settings
         if self.test_settings['oauth']:
             self.auth_zach = User(403022, authorize=True)
 

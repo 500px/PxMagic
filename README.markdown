@@ -15,17 +15,12 @@ If you would like to get involved feel free to contact
 Installation
 ------------
 
-The installer has some problems on certain platforms. It works with Ubuntu 12.04,
-but some minor manual changes may need to take place for it to work under OSX.
-
-When the installer runs, verify that it has place authentication.json.example
-in the same path as the actual package installation path.
-
 ### To install:
 
-1.  ```[sudo] python setup.py build ```
-2.  ```[sudo] python setup.py install ```
-3.  ```[sudo] pip install requests-oauth ``` (oauth users only)
+1. Edit ./fhp/helpers/authentication.example.py and rename to ./fhp/helpers/authentication.py
+2.  ```[sudo] python setup.py build ```
+3.  ```[sudo] python setup.py install ```
+4.  ```[sudo] pip install requests-oauth ``` (oauth users only)
 
 To try without installing
 -------------------------	
@@ -36,5 +31,5 @@ To try without installing
 
 To run test suite
 -----------------
-1. Turn on oauth testing by editing config/test_settings.json (requires chrome browser)
+1. Ignore fhp/tests/settings.py
 2. ```python -m discover ```

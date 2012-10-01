@@ -9,6 +9,7 @@ config/authentication.json.preprod
 
 # Ignore editor generated files.
 *~
+*.backup*
 
 # Ignore python compiled files and generated directories.
 *.pyc
@@ -20,8 +21,7 @@ fhp.egg-info/
 run_current.sh
 
 # Ignore sensitive files
-fhp/config/authentication.json
-fhp/config/authentication.json.preprod
+*authentication.py
 
 # Ignore test photo
 fhp/tests/test_photo.jpg

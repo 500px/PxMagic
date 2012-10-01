@@ -2,13 +2,13 @@ import unittest
 import os
 from fhp.models.photo_search import PhotoSearch
 from fhp.helpers.json_finder import _parse_json
+from fhp.tests.settings import test_settings
 
 class Test_retrieve_photo_search(unittest.TestCase):
     """ This tests the photo_search class. """
     
     def setUp(self):
-        with open(os.path.join('fhp', 'config', 'test_settings.json')) as f:
-            self.test_settings = _parse_json(f.read())
+        self.test_settings = test_settings
         self.nature_photos = PhotoSearch(tag='nature')
     
     def test_init(self):
