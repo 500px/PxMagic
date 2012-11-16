@@ -10,6 +10,7 @@ from tests.settings import test_settings
 
 class Test_retrieve_user(unittest.TestCase):
     def setUp(self):
+        print "setup here"
         self.zachaysan = User(403022)
         self.test_settings = test_settings
         if self.test_settings['oauth']:
@@ -40,6 +41,7 @@ class Test_retrieve_user(unittest.TestCase):
         self.assertFalse(hasattr(self.zachaysan, 'auth'))
         
     def test_oauth_with_oauth(self):
+        print "fucking here"
         if self.test_settings['oauth']:
             api_test_user = self.auth_zach
             self.assertTrue(hasattr(api_test_user, 'auth'))

@@ -1,13 +1,16 @@
 """
 Created by @arthurnn on 2012-01-19.
+Modified by @zachaysan - now it actually does stuff :)
 """
 from functools import partial
 
 import urllib
 from fhp.helpers.json_finder import _parse_json
-from fhp.helpers.http import safe_urlopen, smart_urlencode, finalize_oauth_client
+
+from fhp.helpers.http import http_request, smart_urlencode, finalize_oauth_client
 from fhp.helpers.http import build_oauth_client_for_client, use_auth_url_fn
-from fhp.helpers.http import multipart_post
+from fhp.helpers.http import multipart_post, paginate
+
 from pprint import pprint
 class FiveHundredPx(object):
     BASE_URL = 'https://api.500px.com/v1'
@@ -28,35 +31,19 @@ class FiveHundredPx(object):
         """
         self.verify_url = verify_url
 
-    def request(self, path, post_args=None, **kwargs):
+    def request(self, path, post_args=None, log_request=False, **kwargs):
         """Handles the actual request to 500px. Posting has yet 
         to be implemented.
         """
-        log_request = False
+
         if post_args:
             raise NotImplementedError
         self._set_consumer_key_to_args_(post_args, kwargs)
-        post_data = None if post_args is None else urllib.urlencode(post_args)
-        encoded_kwargs = smart_urlencode(kwargs)
-        full_url = FiveHundredPx.BASE_URL + path + "?" + encoded_kwargs
-        if log_request:
-            from time import time
-            print time()
-            print full_url
-        with safe_urlopen(full_url, post_data) as file_resp:
-            file_contents = file_resp.read()
-            if log_request:
-                from time import time
-                print time()
-                print file_contents[:40]
-            response = None
-            try:
-                response = _parse_json(file_contents)
-            except:
-                print file_contents
-                print full_url
-        return response
-            
+        base_url = FiveHundredPx.BASE_URL
+        return http_request(base_url, path, post_args, log_request, **kwargs)
+
+    """ PHOTOS """
+
     def get_photo(self, id, **kwargs):
         data = self.request('/photos/%d' % id, **kwargs)
         return data
@@ -84,44 +71,10 @@ class FiveHundredPx(object):
             return True
         else:
             print response.content
-    
-    def get_blog_post(self, id):
-        blog_post = self.request('/blogs/%d' % id)
-        return dict(blog_post=blog_post)
-
-    def get_user_by_id(self, user_id, authorized_client=None, **kwargs):
-        if 'username' in kwargs:
-            raise TypeError, "get_user_by_id cannot handle a username param"
-        if 'email' in kwargs:
-            raise TypeError, "get_user_by_id cannot handle a email param"
-        if authorized_client:
-            # This may be done incorrectly. Authorized clients both let you 
-            # do requests as well as pull down user information for the 
-            # authorized user. Right now this basically throws out the user_id.
-            url = FiveHundredPx.BASE_URL + '/users'
-            data = self.use_authorized_client(authorized_client, url, **kwargs)
-        else:
-            data = self.request('/users/%d' % user_id, **kwargs)
-        return data
-
-    def get_user_by_username(self, username, authorized_client=None, **kwargs):
-        if 'id' in kwargs:
-            raise TypeError, "get_user_by_username cannot handle a user_id param"
-        if 'email' in kwargs:
-            raise TypeError, "get_user_by_id cannot handle a email param"
-        if authorized_client:
-            # This may be done incorrectly. Authorized clients both let you 
-            # do requests as well as pull down user information for the 
-            # authorized user. Right now this basically throws out the username.
-            url = FiveHundredPx.BASE_URL + '/users'
-            data = self.use_authorized_client(authorized_client, url, **kwargs)
-        else:
-            data = self.request('/users/show', username=username, **kwargs)
-        return data
 
     def get_photos(self, skip=None, rpp=20, **kwargs):
         request_function = partial(self.request, '/photos', **kwargs)
-        for photo in self.paginate(skip, rpp, request_function, 'photos'):
+        for photo in paginate(skip, rpp, request_function, 'photos'):
             yield photo
 
     def get_photo_comments(self, photo_id, skip=None, rpp=20):
@@ -129,17 +82,9 @@ class FiveHundredPx(object):
             """ It seems this does not work on the API """
             raise NotImplementedError
         request_function = partial(self.request, '/photos/%s/comments' % photo_id)
-        for photo_comment in self.paginate(skip, rpp, request_function, 'comments'):
+        for photo_comment in paginate(skip, rpp, request_function, 'comments'):
             yield photo_comment
 
-    def get_blog_post_comments(self, blog_post_id, skip=None, rpp=20):
-        if rpp != 20:
-            """ It seems this does not work on the API """
-            raise NotImplementedError
-        request_function = partial(self.request, '/blogs/%s/comments' % blog_post_id)
-        for blog_post_comment in self.paginate(skip, rpp, request_function, 'comments'):
-            yield blog_post_comment
-        
     def photo_search(self, term=None, tag=None, tags=None, skip=None, sort=None, rpp=100):
         kwargs = {}
         if not bool(tag) != bool(term):
@@ -151,91 +96,89 @@ class FiveHundredPx(object):
         if tags:
             kwargs['tags'] = tags
         request_function = partial(self.request, '/photos/search', **kwargs)
-        for photo in self.paginate(skip, rpp, request_function, 'photos'):
+        for photo in paginate(skip, rpp, request_function, 'photos'):
             yield photo
-
-    def paginate(self, skip, rpp, request_function, title, total_pages='total_pages'):
-        page = 1
-        if skip:
-            page = skip / rpp
-            skip -= page * rpp
-            page += 1
-            assert(skip >= 0) 
-        while True:
-            data = request_function(page=page, rpp=rpp)
-            for thing in data[title]:
-                if skip:
-                    skip -= 1
-                    continue
-                yield thing
-            if page == data[total_pages]:
-                break
-            page += 1
         
-    def user_search(self, term, skip=None, rpp=100):
-        request_function = partial(self.request, '/users/search', term=term)
-        for user in self.paginate(skip, rpp, request_function, "users"):
-            yield user
-        
-    def get_user_friends(self, user_id, skip=None, rpp=100):
-        request_function = partial(self.request, '/users/%s/friends' % user_id)
-        for friend in self.paginate(skip, rpp, request_function, "friends", "friends_pages"):
-            yield friend
 
-    def get_user_followers(self, user_id, skip=None, rpp=100):
-        request_function = partial(self.request, '/users/%s/followers' % user_id)
-        for follower in self.paginate(skip, rpp, request_function, "followers", "followers_pages"):
-            yield follower
+    """ BLOG POSTS """
+    
+    def get_blog_post(self, id):
+        blog_post = self.request('/blogs/%d' % id)
+        return dict(blog_post=blog_post)
+
+    def get_blog_post_comments(self, blog_post_id, skip=None, rpp=20):
+        if rpp != 20:
+            """ It seems this does not work on the API """
+            raise NotImplementedError
+        request_function = partial(self.request, '/blogs/%s/comments' % blog_post_id)
+        for blog_post_comment in paginate(skip, rpp, request_function, 'comments'):
+            yield blog_post_comment
 
     def get_user_blog_posts(self, user_id, skip=None, rpp=100):
         request_function = partial(self.request,
                                    '/blogs',
                                    feature='user',
                                    user_id=user_id)
-        for blog_post in self.paginate(skip, rpp, request_function, "blog_posts"):
+        for blog_post in paginate(skip, rpp, request_function, "blog_posts"):
             yield blog_post
             
-    def get_user_collections(self, authorized_client=None, user_id=None):
-        data = None
-        if user_id and not authorized_client:
-            # User Collections have not been implemented for public 
-            # queries to the API
-            raise NotImplementedError
-        elif user_id and authorized_client:
-            # this should be handled by check to see if the user
-            # id is the same as the owner of the authorized client
-            # if it is, it should go through fine, otherwise it 
-            # is not currently supported by the api
-            raise NotImplementedError
-        elif not authorized_client:
-            assert(user_id)
-            # this default case is interesting because it could be 
-            # used to pull down all public collections. Hard to tell,
-            # requires thought and possible api build out
-            raise NotImplementedError
-        elif authorized_client:
-            assert(not user_id)
-            url = FiveHundredPx.BASE_URL + '/collections'
-            data = self.use_authorized_client(authorized_client, url)
-        else:
-            # this is an undefined state that should never be entered.
-            # but since this portion of code needs to expansion, it needs
-            # to be resistant against someone altering it in such a way 
-            # that lets a case though.
-            assert(False)
-        return data["collections"]
-
-    def get_collection(self, collection_id, authorized_client=None):
-        url = FiveHundredPx.BASE_URL + '/collections/%s' % collection_id
-        data = None
+    """ USERS - Getting user information """
+    def get_user_by_id(self, user_id, authorized_client=None, **kwargs):
+        if 'username' in kwargs:
+            raise TypeError, "get_user_by_id cannot handle a username param"
+        if 'email' in kwargs:
+            raise TypeError, "get_user_by_id cannot handle a email param"
+        args = [user_id, authorized_client]
+        if not any(args):
+            raise TypeError, "One of user_id or authorized_client is needed"
+        if all(args):
+            # This needs to be refactored.
+            # It is a direct symptom of combining 
+            # authorized users and normal users into 
+            # the same class.
+            pass
         if authorized_client:
-            data = self.use_authorized_client(authorized_client, url)
+            data = self.get_by_authorized_client(authorized_client)
         else:
-            # Despite api documentation to the contrary, this call
-            # actually does require api authentication
-            raise NotImplementedError
-            data = self.request(url)
+            data = self.request('/users/%d' % user_id, **kwargs)
         return data
+
+    def get_user_by_username(self, username=None, authorized_client=None, **kwargs):
+        if 'id' in kwargs:
+            raise TypeError, "get_user_by_username cannot handle a user_id param"
+        if 'email' in kwargs:
+            raise TypeError, "get_user_by_id cannot handle a email param"
+        args = [username, authorized_client]
+        if not any(args) or all(args):
+            raise TypeError, "One of username or authorized_client must be supplied"
+        if authorized_client:
+            data = self.get_by_authorized_client
+        else:
+            data = self.request('/users/show', username=username, **kwargs)
+        return data
+
+    def get_by_authorized_client(self, authorized_client, **kwargs):
+        url = FiveHundredPx.BASE_URL + '/users'
+        data = self.use_authorized_client(authorized_client, url, **kwargs)
+        return data
+
+    """ USERS - Getting users based off of criteria """
+    def user_search(self, term, skip=None, rpp=100):
+        request_function = partial(self.request, '/users/search', term=term)
+        for user in paginate(skip, rpp, request_function, "users"):
+            yield user
+        
+    def get_user_friends(self, user_id, skip=None, rpp=100):
+        request_function = partial(self.request, '/users/%s/friends' % user_id)
+        for friend in paginate(skip, rpp, request_function, "friends", "friends_pages"):
+            yield friend
+
+    def get_user_followers(self, user_id, skip=None, rpp=100):
+        request_function = partial(self.request, '/users/%s/followers' % user_id)
+        for follower in paginate(skip, rpp, request_function, "followers", "followers_pages"):
+            yield follower
+
+    """ USERS - Available actions """
 
     def user_favorites_photo(self, photo_id, authorized_client):
         url = FiveHundredPx.BASE_URL + '/photos/%s/favorite' % photo_id
@@ -289,26 +232,51 @@ class FiveHundredPx(object):
         response = authorized_client.post(url, data=post_args)
         return response.status_code == 200
 
-    def use_authorized_client(self,
-                              authorized_client,
-                              url,
-                              post_args=None,
-                              **kwargs):
-        resp_data = None
-        if not post_args:
-            resp_data = _parse_json(authorized_client.get(url, **kwargs).content)
-        else:
-            resp_data = _parse_json(authorized_client.post(url,
-                                                           data=post_args,
-                                                           **kwargs))
-        return resp_data
+    """ COLLECTIONS (also known as sets)"""
 
-    def sample_auth_url_fn(self, authorization_url):
-        from subprocess import call
-        call(["google-chrome",authorization_url])
-        accepted = 'n'
-        while accepted.lower() == 'n':
-            accepted = raw_input('Have you authorized me? (y/n) ')
+    def get_collection(self, collection_id, authorized_client=None):
+        url = FiveHundredPx.BASE_URL + '/collections/%s' % collection_id
+        data = None
+        if authorized_client:
+            data = self.use_authorized_client(authorized_client, url)
+        else:
+            # Despite api documentation to the contrary, this call
+            # actually does require api authentication
+            raise NotImplementedError
+            data = self.request(url)
+        return data
+
+    def get_user_collections(self, authorized_client=None, user_id=None):
+        data = None
+        if user_id and not authorized_client:
+            # User Collections have not been implemented for public 
+            # queries to the API
+            raise NotImplementedError
+        elif user_id and authorized_client:
+            # this should be handled by check to see if the user
+            # id is the same as the owner of the authorized client
+            # if it is, it should go through fine, otherwise it 
+            # is not currently supported by the api
+            raise NotImplementedError
+        elif not authorized_client:
+            assert(user_id)
+            # this default case is interesting because it could be 
+            # used to pull down all public collections. Hard to tell,
+            # requires thought and possible api build out
+            raise NotImplementedError
+        elif authorized_client:
+            assert(not user_id)
+            url = FiveHundredPx.BASE_URL + '/collections'
+            data = self.use_authorized_client(authorized_client, url)
+        else:
+            # this is an undefined state that should never be entered.
+            # but since this portion of code needs to expansion, it needs
+            # to be resistant against someone altering it in such a way 
+            # that lets a case though.
+            assert(False)
+        return data["collections"]
+
+    """ AUTHENTICATION """
 
     def get_authorized_client(self,
                               auth_url_fn=None,
@@ -344,7 +312,20 @@ class FiveHundredPx(object):
                                              consumer_secret=self.consumer_secret,
                                              auth_url_fn=auth_url_fn,
                                              verify_url=self.verify_url)
-    
+    def use_authorized_client(self,
+                              authorized_client,
+                              url,
+                              post_args=None,
+                              **kwargs):
+        resp_data = None
+        if not post_args:
+            resp_data = _parse_json(authorized_client.get(url, **kwargs).content)
+        else:
+            resp_data = _parse_json(authorized_client.post(url,
+                                                           data=post_args,
+                                                           **kwargs))
+        return resp_data
+
     def get_oauth_token_and_secret(self, auth_url_fn=None):
         request_url = FiveHundredPx.BASE_URL + "/oauth/request_token"
         authorize_url = FiveHundredPx.BASE_URL + "/oauth/authorize"
@@ -359,8 +340,20 @@ class FiveHundredPx(object):
         oauth_token, oauth_secret = result
         return oauth_token, oauth_secret
 
+    """ EXAMPLES """
+
+    def sample_auth_url_fn(self, authorization_url):
+        from subprocess import call
+        call(["google-chrome", authorization_url])
+        accepted = 'n'
+        while accepted.lower() == 'n':
+            accepted = raw_input('Have you authorized me? (y/n) ')
+
+    """ HELPERS """
+
     def _set_consumer_key_to_args_(self, post_args, kwargs):
         if post_args is not None:
             post_args["consumer_key"] = self.consumer_key
         else:
             kwargs["consumer_key"] = self.consumer_key
+

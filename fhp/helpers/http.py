@@ -26,6 +26,28 @@ def smart_urlencode(kwargs):
             del(kwargs[key])
     return urllib.urlencode(kwargs, True)
 
+def http_request(base_url, path, post_args, log_request=False, **kwargs):
+    post_data = None if post_args is None else urllib.urlencode(post_args)
+    encoded_kwargs = smart_urlencode(kwargs)
+    full_url = base_url + path + "?" + encoded_kwargs
+    if log_request:
+        from time import time
+        print time()
+        print full_url
+    with safe_urlopen(full_url, post_data) as file_resp:
+        file_contents = file_resp.read()
+        if log_request:
+            from time import time
+            print time()
+            print file_contents[:40]
+        response = None
+        try:
+            response = _parse_json(file_contents)
+        except:
+            print file_contents
+            print full_url
+    return response
+
 def build_oauth_client_for_client(request_url,
                                   authorize_url,
                                   access_token_url,
@@ -107,3 +129,22 @@ def finalize_oauth_client(oauth_token,
     client = requests.session(hooks={'pre_request': oauth_hook})
     client.access_token = access_token
     return client
+
+
+def paginate(skip, rpp, request_function, title, total_pages='total_pages'):
+    page = 1
+    if skip:
+        page = skip / rpp
+        skip -= page * rpp
+        page += 1
+        assert(skip >= 0) 
+    while True:
+        data = request_function(page=page, rpp=rpp)
+        for thing in data[title]:
+            if skip:
+                skip -= 1
+                continue
+            yield thing
+        if page == data[total_pages]:
+            break
+        page += 1
