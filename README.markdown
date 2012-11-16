@@ -1,33 +1,9 @@
 500px Python Magical API Client
 ===============================
-Watch out! Go Daddy issues mean that this client has not been tested for many of the latest commits!
 
-Furthermore installation documentation and overall guides are completely absent!
+This is the magical API client!
 
-It is in your best interest to not install but to use without installing for now since by late tomorrow morning Eastern Time many things will be fixed.
-
-This a Python version for [500px](http://500px.com/ "500px") API, http://developer.500px.com/  
-
-**Warning:** This project is still in active development. 
-If you would like to get involved feel free to contact
-@zachaysan or @arthurnn on github or at 500px.com.
-
-Installation
-------------
-
-### To install:
-
-1. Edit ./fhp/helpers/authentication.example.py and rename to ./fhp/helpers/authentication.py
-2.  ```[sudo] python setup.py build ```
-3.  ```[sudo] python setup.py install ```
-4.  ```[sudo] pip install requests-oauth ``` (oauth users only)
-
-To try without installing
--------------------------	
-```python -m fhp.examples.fetchphotos ```
-
-### Or for some magic object fun:
-```python -m fhp.examples.magic_photos ```
+Soon :sunrise: and :bridge_at_night: will be on your monitor!
 
 To run test suite
 -----------------
