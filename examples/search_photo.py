@@ -7,9 +7,9 @@ Created by @arthurnn on 2012-01-19.
 import urllib
 from StringIO import StringIO
 try:
-    from fivehundred import *
+    from five_hundred_px import *
 except ImportError:
-    from src.fivehundred import *
+    from src.five_hundred_px import *
     from helpers.authentication import get_consumer_key
 
 CONSUMER_KEY = get_consumer_key()

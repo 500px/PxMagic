@@ -11,11 +11,11 @@ setup(
     author_email='help@500px.com',
     description='This is a wrapper for the 500px api.',
     url='https://github.com/500px/PxMagic',
-    #packages=find_packages(exclude=['.*','config','fhp.tests','examples']),
+    #packages=find_packages(exclude=['.*','config','tests','examples']),
     packages=find_packages(),
     install_requires=[],
     extras_require={ 'oauth': ["request-oauth"] },
-    test_suite='fhp.tests',
+    test_suite='tests',
     classifiers = [
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: Web Environment',

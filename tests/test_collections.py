@@ -3,7 +3,7 @@ import os
 from fhp.models.collection import Collection
 from fhp.models.user import User
 from fhp.helpers.json_finder import _parse_json
-from fhp.tests.settings import test_settings
+from tests.settings import test_settings
 
 class Test_retrieve_collection(unittest.TestCase):
     """ This tests the collection class.

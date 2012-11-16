@@ -140,7 +140,7 @@ class FiveHundredPx(object):
         for blog_post_comment in self.paginate(skip, rpp, request_function, 'comments'):
             yield blog_post_comment
         
-    def photo_search(self, term=None, tag=None, tags=None, skip=None, rpp=100):
+    def photo_search(self, term=None, tag=None, tags=None, skip=None, sort=None, rpp=100):
         kwargs = {}
         if not bool(tag) != bool(term):
             raise TypeError, "one and only one of tag xor term is needed"
