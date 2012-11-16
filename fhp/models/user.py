@@ -1,6 +1,6 @@
 from functools import partial
 
-from fhp.src import fivehundred
+from fhp.api import five_hundred_px
 from fhp.helpers import authentication
 
 import fhp.models.collection
@@ -33,7 +33,7 @@ def User(id=None, username=None, email=None, data=None, *args, **kwargs):
 User.username_cache = {}
 
 class user(magic_object):
-    five_hundred_px = fivehundred.FiveHundredPx(authentication.get_consumer_key(),
+    five_hundred_px = five_hundred_px.FiveHundredPx(authentication.get_consumer_key(),
                                                 authentication.get_consumer_secret(),
                                                 authentication.get_verify_url())
 

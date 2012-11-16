@@ -1,4 +1,4 @@
-from fhp.src import fivehundred
+from fhp.api import five_hundred_px
 from fhp.helpers import authentication
 
 import fhp.models.photo
@@ -11,7 +11,7 @@ def Collection(id, *args, **kwargs):
     return collection(id, *args, **kwargs)
 
 class collection(magic_object):
-    five_hundred_px = fivehundred.FiveHundredPx(authentication.get_consumer_key(),
+    five_hundred_px = five_hundred_px.FiveHundredPx(authentication.get_consumer_key(),
                                                 authentication.get_consumer_secret())
 
     def __init__(self, id, data=None, authorized_client=None):
@@ -24,7 +24,7 @@ class collection(magic_object):
         self.photos = {}
         for photo in collection_data['photos']:
             photo_id = photo['id']
-            self.photos[photo_id] = models.photo.Photo(photo_id, data={"photo": photo})
+            self.photos[photo_id] = fhp.models.photo.Photo(photo_id, data={"photo": photo})
         del(collection_data['photos'])
         for key in collection_data:
             setattr(self, key, collection_data[key])

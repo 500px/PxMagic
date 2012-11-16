@@ -1,4 +1,4 @@
-import fhp.src.fivehundred as fh
+import fhp.api.five_hundred_px as fh
 import fhp.helpers.authentication as a
 
 f = fh.FiveHundredPx(a.get_consumer_key(),

@@ -2,7 +2,7 @@ import unittest
 import os
 from fhp.models.photo_search import PhotoSearch
 from fhp.helpers.json_finder import _parse_json
-from fhp.tests.settings import test_settings
+from tests.settings import test_settings
 
 class Test_retrieve_photo_search(unittest.TestCase):
     """ This tests the photo_search class. """

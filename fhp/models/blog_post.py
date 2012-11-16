@@ -1,6 +1,6 @@
 from functools import partial
 
-from fhp.src import fivehundred
+from fhp.api import five_hundred_px
 from fhp.helpers import authentication
 
 import fhp.models.photo
@@ -16,7 +16,7 @@ def BlogPost(id, *args, **kwargs):
     return blog_post(id, *args, **kwargs)
 
 class blog_post(magic_object):
-    five_hundred_px = fivehundred.FiveHundredPx(authentication.get_consumer_key(),
+    five_hundred_px = five_hundred_px.FiveHundredPx(authentication.get_consumer_key(),
                                                 authentication.get_consumer_secret())
     
     def __init__(self, id, data=None, authorized_client=None, user=None):

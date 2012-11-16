@@ -31,5 +31,5 @@ To try without installing
 
 To run test suite
 -----------------
-1. Ignore fhp/tests/settings.py
+1. Ignore tests/settings.py
 2. ```python -m discover ```

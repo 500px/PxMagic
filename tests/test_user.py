@@ -6,7 +6,7 @@ from fhp.models.photo import Photo
 from fhp.models.blog_post import BlogPost
 from fhp.helpers.json_finder import _parse_json
 from fhp.helpers.http import retrieve_oauth_verifier
-from fhp.tests.settings import test_settings
+from tests.settings import test_settings
 
 class Test_retrieve_user(unittest.TestCase):
     def setUp(self):
@@ -210,7 +210,7 @@ bunch of times, I'm testing out the api and there is no delete method in the api
             self.assertTrue(upload_key and test_photo)
             # Note, you will not normally need to do this part unless
             # you are building a local client or something
-            photo_file = open("fhp/tests/test_photo.jpg", "rb")
+            photo_file = open("tests/500px_icon.png", "rb")
             successful_response = self.auth_zach.upload_photo(upload_key,
                                                               test_photo,
                                                               photo_file)
