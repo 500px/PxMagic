@@ -1,6 +1,6 @@
 from functools import partial
 
-from fhp.src import fivehundred
+from fhp.api import five_hundred_px
 from fhp.helpers import authentication
 
 import fhp.models.photo
@@ -8,7 +8,7 @@ import fhp.models.photo
 from fhp.magic.magic_cache import magic_cache, magic_fn_cache
 from fhp.magic.magic_generator import MagicGenerator
 
-five_hundred_px = fivehundred.FiveHundredPx(authentication.get_consumer_key(),
+five_hundred_px = five_hundred_px.FiveHundredPx(authentication.get_consumer_key(),
                                             authentication.get_consumer_secret())
 @magic_fn_cache
 def PhotoSearch(term=None, tag=None, tags=None):

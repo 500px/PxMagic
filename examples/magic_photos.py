@@ -10,9 +10,9 @@ narrate.on = True
 
 def main(narrations_on=True):
     """Fancy automagical api requests when needed 
-    are completed by using the built in models.
+    are completed by using the built in fhp.models.
    
-    These models do several things for you, like:
+    These fhp.models.do several things for you, like:
     1. Caching responses for you, so you don't need
        to waste time doing that yourself.
     2. Lazily doing requests so that the experience 

@@ -10,10 +10,10 @@ try:
     from fhp import helpers
     get_consumer_key = helpers.authentication.get_consumer_key 
     get_consumer_secret = helpers.authentication.get_consumer_secret
-    from fhp import src
-    FiveHundredPx = src.fivehundred.FiveHundredPx
+    from fhp import api
+    FiveHundredPx = src.five_hundred_px.FiveHundredPx
 except ImportError:
-    from fhp.src.fivehundred import *
+    from fhp.api.five_hundred_px import *
     from fhp.helpers.authentication import get_consumer_key,get_consumer_secret
 
 pil_exists = None

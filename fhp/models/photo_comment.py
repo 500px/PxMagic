@@ -1,4 +1,4 @@
-from fhp.src import fivehundred
+from fhp.api import five_hundred_px
 from fhp.helpers import authentication
 
 import fhp.models.photo
@@ -14,7 +14,7 @@ def PhotoComment(id, *args, **kwargs):
     return photo_comment(id, *args, **kwargs)
 
 class photo_comment(magic_object):
-    five_hundred_px = fivehundred.FiveHundredPx(authentication.get_consumer_key(),
+    five_hundred_px = five_hundred_px.FiveHundredPx(authentication.get_consumer_key(),
                                                 authentication.get_consumer_secret())
 
     def __init__(self, id, photo_id, data):
