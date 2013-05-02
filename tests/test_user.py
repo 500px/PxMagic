@@ -210,7 +210,7 @@ bunch of times, I'm testing out the api and there is no delete method in the api
             self.assertTrue(upload_key and test_photo)
             # Note, you will not normally need to do this part unless
             # you are building a local client or something
-            photo_file = open("tests/500px_icon.png", "rb")
+            photo_file = open("tests/zach.jpg", "rb")
             successful_response = self.auth_zach.upload_photo(upload_key,
                                                               test_photo,
                                                               photo_file)

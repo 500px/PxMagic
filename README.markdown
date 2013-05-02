@@ -30,9 +30,6 @@ So some quick things you NEED to know before you get started:
 5. This library was written with two styles of apps in mind. First:
    a traditionally client app library (for example, using this to 
    write an Ubuntu app), Second: a web server.
-   
-   If you are going to be using OAuth and you are attending Pixel 
-   Hack Day come find me. I'm by the window in the secondary room.
 
 6. Before you do anything you need to create helpers/authentication.py
    and provided 3 functions: get_consumer_key(), get_consumer_secret(),
