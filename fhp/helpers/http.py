@@ -65,7 +65,7 @@ def build_oauth_client_for_client(request_url,
                              consumer_secret,
                              auth_url_fn)
     if not verify_url:
-        raise NotImplementedError
+        raise NotImplementedError, "Only possible with a verify url. Maybe you can use http://verify-oauth.herokuapp.com/ ?"
     oauth_token, oauth_secret = result
     oauth_verifier = retrieve_oauth_verifier(oauth_token=oauth_token,
                                             verify_url=verify_url)
@@ -88,6 +88,7 @@ def use_auth_url_fn(request_url,
     response = requests.post(request_url, hooks={'pre_request': pre_oauth_hook})
 
     qs = urlparse.parse_qs(response.text)
+    
     oauth_token = qs['oauth_token'][0]
     oauth_secret = qs['oauth_token_secret'][0]
 
@@ -96,11 +97,11 @@ def use_auth_url_fn(request_url,
     return oauth_token, oauth_secret
 
 def retrieve_oauth_verifier(oauth_token, verify_url):
-    verify_url = verify_url + "?oauth_token=%s" % oauth_token
+    if verify_url[-1] != "/":
+        verify_url += "/"
+    verify_url += str(oauth_token)
     with safe_urlopen(verify_url) as file_resp:
-        raw_response = file_resp.read()
-        response = _parse_json(raw_response)
-    oauth_verifier = response
+        oauth_verifier = file_resp.read()
     return oauth_verifier
 
 def finalize_oauth_client(oauth_token,

@@ -11,7 +11,6 @@ from fhp.helpers.http import http_request, smart_urlencode, finalize_oauth_clien
 from fhp.helpers.http import build_oauth_client_for_client, use_auth_url_fn
 from fhp.helpers.http import multipart_post, paginate
 
-from pprint import pprint
 class FiveHundredPx(object):
     BASE_URL = 'https://api.500px.com/v1'
     
@@ -72,8 +71,12 @@ class FiveHundredPx(object):
         else:
             print response.content
 
-    def get_photos(self, skip=None, rpp=20, **kwargs):
-        request_function = partial(self.request, '/photos', **kwargs)
+    def get_photos(self, skip=None, rpp=20, authorized_client=None, **kwargs):
+        if authorized_client:
+            url = FiveHundredPx.BASE_URL + '/photos'
+            request_function = partial(self.use_authorized_client, authorized_client, url, **kwargs)
+        else:
+            request_function = partial(self.request, '/photos', **kwargs)
         for photo in paginate(skip, rpp, request_function, 'photos'):
             yield photo
 
@@ -316,10 +319,18 @@ class FiveHundredPx(object):
                               authorized_client,
                               url,
                               post_args=None,
+                              skip=None,
+                              rpp=None,
                               **kwargs):
+        
         resp_data = None
+        if skip:
+            kwargs['skip'] = skip
+        if rpp:
+            kwargs['rpp'] = rpp
         if not post_args:
-            resp_data = _parse_json(authorized_client.get(url, **kwargs).content)
+            url += "/?%s" % smart_urlencode(kwargs)
+            resp_data = _parse_json(authorized_client.get(url).content)
         else:
             resp_data = _parse_json(authorized_client.post(url,
                                                            data=post_args,

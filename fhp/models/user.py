@@ -34,8 +34,8 @@ User.username_cache = {}
 
 class user(magic_object):
     five_hundred_px = five_hundred_px.FiveHundredPx(authentication.get_consumer_key(),
-                                                authentication.get_consumer_secret(),
-                                                authentication.get_verify_url())
+                                                    authentication.get_consumer_secret(),
+                                                    authentication.get_verify_url())
 
     def __init__(self,
                  id=None,
@@ -66,7 +66,7 @@ class user(magic_object):
         See self.authorize_step_one() to create an authorized server.
         """
         self.authorized_client = user.five_hundred_px.get_authorized_client()
-            
+
     def initialize_authorization(self):
         self._oauth_token, self._oauth_secret = user.five_hundred_px.get_oauth_token_and_secret()
 
@@ -246,10 +246,14 @@ class user(magic_object):
                                       iter_destination=build_user)
 
     def _get_photos_(self):
-        kwargs = dict(feature='user',
-                      user_id=self.id,
-                      user=True)
-        iter_source = partial(user.five_hundred_px.get_photos, **kwargs)
+        kwargs = {}
+        kwargs = dict(feature='user', user_id=self.id)
+        if self.authorized_client:
+            kwargs['feature'] = 'user'
+
+        iter_source = partial(user.five_hundred_px.get_photos,
+                              authorized_client=self.authorized_client,
+                              **kwargs)
 
         def build_photo(photo_data):
             data = dict(photo=photo_data)

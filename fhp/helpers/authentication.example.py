@@ -5,7 +5,10 @@ import os
 
 CONSUMER_KEY = "__your_consumer_key__"
 CONSUMER_SECRET = "__your_consumer_secret__"
-VERIFY_URL = "__used_for_client_apps_optional__"
+
+# See "http://verify-oauth.herokuapp.com/" and 
+VERIFY_URL = "__used_for_client_apps_or_one_time_scripts_is_optional__"
+POSSIBLE_VERIFY_URL_IF_YOU_WANT_TO_PLAY_AROUND_WITH_AN_UNSECURE_APP_OR_SOMETHING_USE_AT_YOUR_OWN_RISK = "http://verify-oauth.herokuapp.com/"
 
 def root_dir():
     return os.path.join(os.path.dirname(__file__), "..")

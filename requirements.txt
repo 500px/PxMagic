@@ -1,0 +1,3 @@
+discover==0.4.0
+requests==0.14.2
+requests-oauth>=0.0.1
